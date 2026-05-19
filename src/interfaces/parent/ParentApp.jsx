@@ -75,14 +75,12 @@ export default function ParentApp() {
           const updated = payload.new
           if (!updated) return
 
-          if (updated.status === 'delivered') {
+          if (updated.status === 'delivered' || updated.status === 'cleared') {
             setShowGoodbye(true)
             setTimeout(() => {
               setShowGoodbye(false)
               setRequest(null)
             }, 3000)
-          } else if (updated.status === 'cleared') {
-            setRequest(null)
           } else {
             setRequest(updated)
           }
@@ -157,7 +155,9 @@ export default function ParentApp() {
   }
 
   const accentColor = child?.classes?.color || '#3B82F6'
+  const firstName = child?.full_name?.split(' ')[0] || child?.full_name || ''
 
+  // State E — goodbye after delivered/cleared
   if (showGoodbye) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: `${accentColor}15` }}>
@@ -216,8 +216,8 @@ export default function ParentApp() {
           </div>
         )}
 
-        {/* State B — request active (requested or ready), not yet arrived */}
-        {request && (request.status === 'requested' || request.status === 'ready') && (
+        {/* State B — requested, staff notified */}
+        {request && request.status === 'requested' && (
           <div className="w-full max-w-sm text-center">
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8">
               <p className="font-semibold text-gray-800 text-lg">
@@ -241,7 +241,33 @@ export default function ParentApp() {
           </div>
         )}
 
-        {/* State C — arrived, awaiting handoff */}
+        {/* State C — ready, warm message */}
+        {request && request.status === 'ready' && (
+          <div className="w-full max-w-sm text-center">
+            <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
+              <div className="text-4xl mb-3">🌟</div>
+              <p className="font-bold text-gray-800 text-xl mb-2">
+                {firstName} is ready and waiting for you!
+              </p>
+              <p className="text-amber-700 text-sm">
+                Come on over — we'll have them at the door with a smile 💛
+              </p>
+            </div>
+            <p className="text-gray-500 mb-4 text-sm">
+              Press the button below when you arrive
+            </p>
+            <button
+              onClick={markArrived}
+              disabled={actionLoading}
+              className="w-full bg-amber-500 text-white font-semibold text-xl py-5 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              style={{ minHeight: '72px' }}
+            >
+              {actionLoading ? 'Updating…' : 'I Have Arrived'}
+            </button>
+          </div>
+        )}
+
+        {/* State D — arrived, awaiting handoff */}
         {request && request.status === 'arrived' && (
           <div className="w-full max-w-sm text-center">
             <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: `${accentColor}15` }}>
@@ -256,9 +282,9 @@ export default function ParentApp() {
                   />
                 </div>
               </div>
-              <p className="font-bold text-gray-800 text-xl">You're here!</p>
-              <p className="text-gray-600 mt-2">
-                Staff are bringing {child?.full_name?.split(' ')[0]} to you.
+              <p className="font-bold text-gray-800 text-xl mb-2">You're here!</p>
+              <p className="text-gray-600">
+                We're bringing {firstName} to you now 🤗
               </p>
             </div>
 

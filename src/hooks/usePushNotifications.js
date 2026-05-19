@@ -8,6 +8,13 @@ const urlBase64ToUint8Array = (base64String) => {
   return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)))
 }
 
+const checkSupported = () => {
+  if (typeof Notification === 'undefined') return false
+  if (!('serviceWorker' in navigator)) return false
+  if (!('PushManager' in window)) return false
+  return true
+}
+
 export function usePushNotifications(userId) {
   const [permission, setPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
@@ -19,19 +26,20 @@ export function usePushNotifications(userId) {
     try {
       setError(null)
 
-      if (!('serviceWorker' in navigator)) {
-        setError('Service workers not supported in this browser.')
-        return
-      }
-      if (!('PushManager' in window)) {
-        setError('Push notifications not supported in this browser.')
+      if (!checkSupported()) {
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+        if (isIOS) {
+          setError('On iPhone: tap Share → "Add to Home Screen" first, then enable notifications.')
+        } else {
+          setError('Please use Chrome browser for notifications.')
+        }
         return
       }
 
       const result = await Notification.requestPermission()
       setPermission(result)
       if (result !== 'granted') {
-        setError('Notification permission denied.')
+        setError('Permission denied. Please allow notifications in browser settings.')
         return
       }
 
@@ -40,7 +48,7 @@ export function usePushNotifications(userId) {
 
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
       if (!vapidKey) {
-        setError('VAPID key missing from environment.')
+        setError('Configuration error. Contact administrator.')
         return
       }
 
@@ -69,5 +77,5 @@ export function usePushNotifications(userId) {
     }
   }
 
-  return { permission, subscribed, error, subscribe }
+  return { permission, subscribed, error, isSupported: checkSupported(), subscribe }
 }
