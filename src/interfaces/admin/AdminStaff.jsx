@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
-import { supabaseAdmin } from '../../supabaseAdmin'
+import { supabaseAdmin } from '../../supabaseClient'
 
 function Modal({ title, onClose, children }) {
   return (
@@ -25,28 +25,41 @@ const ROLES = ['staff', 'admin', 'display']
 const ROLE_LABELS = { staff: 'Staff', admin: 'Admin', display: 'Display Screen' }
 
 export default function AdminStaff() {
-  const [staffList, setStaffList] = useState([]) // {id, email, display_name, role}
+  const [staffList, setStaffList] = useState([])
+  const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [resetTarget, setResetTarget] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [form, setForm] = useState({ email: '', password: '', display_name: '', role: 'staff' })
-  const [editRole, setEditRole] = useState('staff')
+  const [form, setForm] = useState({ email: '', password: '', display_name: '', role: 'staff', class_id: '' })
+  const [editForm, setEditForm] = useState({ role: 'staff', class_id: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [successMsg, setSuccessMsg] = useState(null)
 
   useEffect(() => {
     load()
+
+    const channel = supabase
+      .channel('staff_profiles_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'staff_profiles' },
+        () => load(false)
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
   }, [])
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (showLoading = true) => {
+    if (showLoading) setLoading(true)
 
-    const [{ data: profiles }, adminResult] = await Promise.all([
-      supabase.from('staff_profiles').select('id, display_name, role').order('display_name'),
+    const [{ data: profiles }, adminResult, { data: classData }] = await Promise.all([
+      supabase.from('staff_profiles').select('id, display_name, role, class_id').order('display_name'),
       supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
+      supabase.from('classes').select('id, name').order('name'),
     ])
 
     const userEmailMap = Object.fromEntries(
@@ -59,6 +72,7 @@ export default function AdminStaff() {
     }))
 
     setStaffList(combined)
+    setClasses(classData || [])
     setLoading(false)
   }
 
@@ -88,12 +102,13 @@ export default function AdminStaff() {
       return
     }
 
-    const { error: profileError } = await supabase
+    const { error: profileError } = await supabaseAdmin
       .from('staff_profiles')
       .insert({
         id: newUserData.user.id,
         display_name: form.display_name.trim(),
         role: form.role,
+        class_id: form.class_id || null,
       })
 
     if (profileError) {
@@ -104,15 +119,15 @@ export default function AdminStaff() {
 
     setSaving(false)
     setShowAdd(false)
-    setForm({ email: '', password: '', display_name: '', role: 'staff' })
+    setForm({ email: '', password: '', display_name: '', role: 'staff', class_id: '' })
     load()
   }
 
-  const saveRole = async () => {
+  const saveEdit = async () => {
     setSaving(true)
     const { error: err } = await supabase
       .from('staff_profiles')
-      .update({ role: editRole })
+      .update({ role: editForm.role, class_id: editForm.class_id || null })
       .eq('id', editTarget.id)
 
     if (err) {
@@ -139,6 +154,8 @@ export default function AdminStaff() {
     load()
   }
 
+  const classNameMap = Object.fromEntries(classes.map((c) => [c.id, c.name]))
+
   if (loading) {
     return <div className="text-gray-400 py-12 text-center">Loading…</div>
   }
@@ -151,7 +168,7 @@ export default function AdminStaff() {
           onClick={() => {
             setShowAdd(true)
             setError(null)
-            setForm({ email: '', password: '', display_name: '', role: 'staff' })
+            setForm({ email: '', password: '', display_name: '', role: 'staff', class_id: '' })
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
         >
@@ -166,12 +183,13 @@ export default function AdminStaff() {
       )}
 
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
-        <table className="w-full text-sm min-w-[560px]">
+        <table className="w-full text-sm min-w-[620px]">
           <thead>
             <tr className="border-b bg-gray-50">
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Email</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Role</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600">Class</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -195,12 +213,18 @@ export default function AdminStaff() {
                     {ROLE_LABELS[member.role]}
                   </span>
                 </td>
+                <td className="px-4 py-3 text-gray-500 text-xs">
+                  {member.class_id ? classNameMap[member.class_id] || '—' : <span className="text-gray-300">—</span>}
+                </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <button
-                    onClick={() => { setEditTarget(member); setEditRole(member.role) }}
+                    onClick={() => {
+                      setEditTarget(member)
+                      setEditForm({ role: member.role, class_id: member.class_id || '' })
+                    }}
                     className="text-blue-600 hover:underline text-xs mr-3"
                   >
-                    Edit Role
+                    Edit
                   </button>
                   <button
                     onClick={() => setResetTarget(member)}
@@ -219,7 +243,7 @@ export default function AdminStaff() {
             ))}
             {staffList.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
                   No staff accounts yet
                 </td>
               </tr>
@@ -270,7 +294,7 @@ export default function AdminStaff() {
             />
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
             <select
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -279,6 +303,22 @@ export default function AdminStaff() {
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Assigned Class <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <select
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.class_id}
+              onChange={(e) => setForm((f) => ({ ...f, class_id: e.target.value }))}
+            >
+              <option value="">No class assigned</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </div>
@@ -301,21 +341,42 @@ export default function AdminStaff() {
         </Modal>
       )}
 
-      {/* Edit role modal */}
+      {/* Edit staff modal */}
       {editTarget && (
-        <Modal title="Edit Role" onClose={() => setEditTarget(null)}>
+        <Modal title="Edit Staff" onClose={() => setEditTarget(null)}>
           <p className="text-sm text-gray-600 mb-4">
-            Changing role for <strong>{editTarget.display_name}</strong>
+            Editing <strong>{editTarget.display_name}</strong>
           </p>
-          <select
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={editRole}
-            onChange={(e) => setEditRole(e.target.value)}
-          >
-            {ROLES.map((r) => (
-              <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-            ))}
-          </select>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={editForm.role}
+              onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
+            >
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Assigned Class <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <select
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={editForm.class_id}
+              onChange={(e) => setEditForm((f) => ({ ...f, class_id: e.target.value }))}
+            >
+              <option value="">No class assigned</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex gap-3 justify-end">
             <button
               onClick={() => setEditTarget(null)}
@@ -324,11 +385,11 @@ export default function AdminStaff() {
               Cancel
             </button>
             <button
-              onClick={saveRole}
+              onClick={saveEdit}
               disabled={saving}
               className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {saving ? 'Saving…' : 'Save Role'}
+              {saving ? 'Saving…' : 'Save'}
             </button>
           </div>
         </Modal>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
-import { supabaseAdmin } from '../../supabaseAdmin'
+import { supabaseAdmin } from '../../supabaseClient'
 
 function Modal({ title, onClose, children }) {
   return (
@@ -36,10 +36,21 @@ export default function AdminChildren() {
 
   useEffect(() => {
     load()
+
+    const channel = supabase
+      .channel('children_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'children' },
+        () => load(false)
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
   }, [])
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (showLoading = true) => {
+    if (showLoading) setLoading(true)
 
     const [{ data: childData }, { data: classData }, adminResult] =
       await Promise.all([

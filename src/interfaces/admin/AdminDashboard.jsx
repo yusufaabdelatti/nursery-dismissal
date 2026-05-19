@@ -7,8 +7,10 @@ import AdminClasses from './AdminClasses'
 import AdminParents from './AdminParents'
 import AdminStaff from './AdminStaff'
 import AdminSettings from './AdminSettings'
+import AdminRequests from './AdminRequests'
 
 const NAV_ITEMS = [
+  { path: 'requests', label: 'Active Requests' },
   { path: 'children', label: 'Children' },
   { path: 'classes', label: 'Classes' },
   { path: 'parents', label: 'Parent Accounts' },
@@ -104,7 +106,8 @@ export default function AdminDashboard() {
 
         <main className="flex-1 p-6">
           <Routes>
-            <Route index element={<Navigate to="children" replace />} />
+            <Route index element={<Navigate to="requests" replace />} />
+            <Route path="requests" element={<AdminRequests />} />
             <Route path="children" element={<AdminChildren />} />
             <Route path="classes" element={<AdminClasses />} />
             <Route path="parents" element={<AdminParents />} />

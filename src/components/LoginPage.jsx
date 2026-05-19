@@ -31,7 +31,6 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-
     const { data: staffData } = await supabase
       .from('staff_profiles')
       .select('role')

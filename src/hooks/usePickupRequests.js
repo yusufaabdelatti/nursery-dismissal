@@ -1,48 +1,52 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 
-export function usePickupRequests(filter = {}) {
+export function usePickupRequests() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const channelRef = useRef(null)
 
   const today = new Date().toISOString().split('T')[0]
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      const { data } = await supabase
-        .from('pickup_requests')
-        .select(`
-          *,
-          children (
+  const removeRequest = useCallback((id) => {
+    setRequests((prev) => prev.filter((r) => r.id !== id))
+  }, [])
+
+  const fetchRequests = async () => {
+    const { data, error } = await supabase
+      .from('pickup_requests')
+      .select(`
+        *,
+        children (
+          id,
+          full_name,
+          class_id,
+          classes (
             id,
-            full_name,
-            class_id,
-            classes (
-              id,
-              name,
-              color
-            )
+            name,
+            color
           )
-        `)
-        .eq('date', today)
-        .not('status', 'in', '(delivered,cleared)')
+        )
+      `)
+      .eq('date', today)
+      .not('status', 'in', '("delivered","cleared")')
+      .order('requested_at', { ascending: true })
 
-      let results = data || []
-
-      // Class filter applied client-side for reliable nested-field filtering
-      if (filter.classId) {
-        results = results.filter((r) => r.children?.class_id === filter.classId)
-      }
-
-      setRequests(results)
-      setLoading(false)
+    if (!error && data) {
+      setRequests(data)
     }
+    setLoading(false)
+  }
 
+  useEffect(() => {
     fetchRequests()
 
-    // Unique channel name per mount to avoid conflicts with multiple subscribers
-    const channelName = `pickup_requests_${Date.now()}_${Math.random()}`
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+    }
+
+    const channelName = `pickup_realtime_${Date.now()}`
+
     const channel = supabase
       .channel(channelName)
       .on(
@@ -52,11 +56,14 @@ export function usePickupRequests(filter = {}) {
           schema: 'public',
           table: 'pickup_requests',
         },
-        () => {
+        (payload) => {
+          console.log('Realtime event:', payload.eventType, payload.new)
           fetchRequests()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
+      })
 
     channelRef.current = channel
 
@@ -65,7 +72,7 @@ export function usePickupRequests(filter = {}) {
         supabase.removeChannel(channelRef.current)
       }
     }
-  }, [filter.classId, today])
+  }, [])
 
-  return { requests, loading }
+  return { requests, loading, refetch: fetchRequests, removeRequest }
 }

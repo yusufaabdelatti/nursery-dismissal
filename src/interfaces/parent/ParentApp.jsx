@@ -216,8 +216,8 @@ export default function ParentApp() {
           </div>
         )}
 
-        {/* State B — requested, not yet arrived */}
-        {request && request.status === 'requested' && (
+        {/* State B — request active (requested or ready), not yet arrived */}
+        {request && (request.status === 'requested' || request.status === 'ready') && (
           <div className="w-full max-w-sm text-center">
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8">
               <p className="font-semibold text-gray-800 text-lg">
@@ -242,7 +242,7 @@ export default function ParentApp() {
         )}
 
         {/* State C — arrived, awaiting handoff */}
-        {request && (request.status === 'arrived' || request.status === 'ready') && (
+        {request && request.status === 'arrived' && (
           <div className="w-full max-w-sm text-center">
             <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: `${accentColor}15` }}>
               <div className="flex justify-center mb-4">

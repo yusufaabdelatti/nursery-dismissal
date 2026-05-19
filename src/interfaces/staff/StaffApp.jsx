@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
 import { usePickupRequests } from '../../hooks/usePickupRequests'
+import { usePushNotifications } from '../../hooks/usePushNotifications'
 import { sortRequests } from '../../utils/sorting'
 import { getCountdownSeconds, formatCountdown } from '../../utils/countdown'
 
@@ -35,9 +36,7 @@ function CountdownBadge({ requestedAt, status }) {
   const text = formatCountdown(remaining)
 
   if (!text) {
-    return (
-      <span className="text-amber-600 text-sm font-medium">Arriving Soon</span>
-    )
+    return <span className="text-amber-600 text-sm font-medium">Arriving Soon</span>
   }
 
   return (
@@ -45,24 +44,21 @@ function CountdownBadge({ requestedAt, status }) {
   )
 }
 
-function RequestCard({ request, onMarkReady, onMarkDelivered, delivering }) {
+function RequestCard({ request, onMarkReady, onMarkDelivered }) {
   const child = request.children
   const classColor = child?.classes?.color || '#6B7280'
   const isArrived = request.status === 'arrived'
   const isReady = request.status === 'ready'
-  const isFading = delivering.has(request.id)
 
   return (
     <div
-      className="rounded-xl p-4 mb-3 border transition-all duration-1000"
+      className="rounded-xl p-4 mb-3 border"
       style={{
         borderColor: `${classColor}40`,
         backgroundColor: isArrived ? `${classColor}15` : 'white',
         boxShadow: isArrived ? `0 0 12px ${classColor}44` : '0 1px 3px rgba(0,0,0,0.06)',
-        opacity: isFading ? 0 : 1,
       }}
     >
-      {/* Top row */}
       <div className="flex items-center gap-3 mb-3">
         <div
           className="w-3 h-3 rounded-full flex-shrink-0"
@@ -77,17 +73,13 @@ function RequestCard({ request, onMarkReady, onMarkDelivered, delivering }) {
         >
           {child?.classes?.name || '—'}
         </span>
-        <CountdownBadge
-          requestedAt={request.requested_at}
-          status={request.status}
-        />
+        <CountdownBadge requestedAt={request.requested_at} status={request.status} />
       </div>
 
-      {/* Action buttons */}
       <div className="flex gap-2">
         <button
           onClick={() => onMarkReady(request.id)}
-          disabled={isReady || isArrived || isFading}
+          disabled={isReady || isArrived}
           className="flex-1 py-3 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed"
           style={
             isReady || isArrived
@@ -99,8 +91,7 @@ function RequestCard({ request, onMarkReady, onMarkDelivered, delivering }) {
         </button>
         <button
           onClick={() => onMarkDelivered(request.id)}
-          disabled={isFading}
-          className="flex-1 py-3 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-700 transition-colors disabled:opacity-50"
+          className="flex-1 py-3 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-700 transition-colors"
         >
           Mark Delivered
         </button>
@@ -112,24 +103,34 @@ function RequestCard({ request, onMarkReady, onMarkDelivered, delivering }) {
 export default function StaffApp() {
   const { user } = useAuth()
   const [staffName, setStaffName] = useState('')
+  const [assignedClassId, setAssignedClassId] = useState(null)
   const [classes, setClasses] = useState([])
   const [selectedClass, setSelectedClass] = useState('')
-  const [delivering, setDelivering] = useState(new Set())
   const [error, setError] = useState(null)
 
-  const filter = selectedClass ? { classId: selectedClass } : {}
-  const { requests, loading } = usePickupRequests(filter)
+  const { requests, loading, removeRequest } = usePickupRequests()
+  const { permission, subscribed, error: pushError, subscribe } = usePushNotifications(user?.id)
+
+  const filtered = selectedClass
+    ? requests.filter((r) => r.children?.class_id === selectedClass)
+    : requests
 
   useEffect(() => {
     if (!user) return
 
     supabase
       .from('staff_profiles')
-      .select('display_name')
+      .select('display_name, class_id')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
-        if (data) setStaffName(data.display_name)
+        if (data) {
+          setStaffName(data.display_name)
+          if (data.class_id) {
+            setAssignedClassId(data.class_id)
+            setSelectedClass(data.class_id)
+          }
+        }
       })
 
     supabase
@@ -151,47 +152,27 @@ export default function StaffApp() {
 
   const markDelivered = async (requestId) => {
     setError(null)
-    setDelivering((prev) => new Set(prev).add(requestId))
+    removeRequest(requestId)
 
     const { error: err } = await supabase
       .from('pickup_requests')
       .update({ status: 'delivered', delivered_at: new Date().toISOString() })
       .eq('id', requestId)
 
-    if (err) {
-      setError('Something went wrong. Please try again.')
-      setDelivering((prev) => {
-        const next = new Set(prev)
-        next.delete(requestId)
-        return next
-      })
-      return
-    }
-
-    // Real-time hook will remove the record; keep fade going for 2s
-    setTimeout(() => {
-      setDelivering((prev) => {
-        const next = new Set(prev)
-        next.delete(requestId)
-        return next
-      })
-    }, 2000)
+    if (err) setError('Something went wrong. Please try again.')
   }
 
   const logout = async () => {
     await supabase.auth.signOut()
   }
 
-  const sorted = sortRequests(requests)
+  const sorted = sortRequests(filtered)
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Top bar */}
       <div className="bg-white border-b px-4 py-3 flex items-center gap-3">
         <div className="flex-1">
-          <span className="font-semibold text-gray-800">
-            {staffName || 'Staff'}
-          </span>
+          <span className="font-semibold text-gray-800">{staffName || 'Staff'}</span>
         </div>
 
         <select
@@ -215,8 +196,26 @@ export default function StaffApp() {
         </button>
       </div>
 
-      {/* Request list */}
       <div className="flex-1 p-4 max-w-2xl mx-auto w-full">
+        {permission !== 'granted' && !subscribed && (
+          <div className="bg-blue-50 border border-blue-200 px-4 py-3 rounded-xl mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-800">
+                Enable notifications to get alerted for new pickup requests
+              </span>
+              <button
+                onClick={subscribe}
+                className="ml-4 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap flex-shrink-0"
+              >
+                Enable
+              </button>
+            </div>
+            {pushError && (
+              <p className="text-red-600 text-xs mt-2">{pushError}</p>
+            )}
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-3 text-sm">
             {error}
@@ -240,7 +239,6 @@ export default function StaffApp() {
               request={req}
               onMarkReady={markReady}
               onMarkDelivered={markDelivered}
-              delivering={delivering}
             />
           ))}
       </div>

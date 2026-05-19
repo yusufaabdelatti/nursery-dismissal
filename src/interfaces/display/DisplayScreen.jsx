@@ -114,11 +114,11 @@ export default function DisplayScreen() {
   useEffect(() => {
     supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'branch_name')
-      .single()
+      .select('branch_name')
+      .eq('id', 1)
+      .maybeSingle()
       .then(({ data }) => {
-        if (data?.value) setBranchName(data.value)
+        if (data?.branch_name) setBranchName(data.branch_name)
       })
   }, [])
 

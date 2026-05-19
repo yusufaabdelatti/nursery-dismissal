@@ -35,10 +35,21 @@ export default function AdminClasses() {
 
   useEffect(() => {
     load()
+
+    const channel = supabase
+      .channel('classes_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'classes' },
+        () => load(false)
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
   }, [])
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (showLoading = true) => {
+    if (showLoading) setLoading(true)
     const { data: cls } = await supabase
       .from('classes')
       .select('*')

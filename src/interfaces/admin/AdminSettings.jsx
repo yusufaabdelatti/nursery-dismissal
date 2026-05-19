@@ -33,11 +33,11 @@ export default function AdminSettings() {
   useEffect(() => {
     supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'branch_name')
-      .single()
+      .select('branch_name')
+      .eq('id', 1)
+      .maybeSingle()
       .then(({ data }) => {
-        const name = data?.value || ''
+        const name = data?.branch_name || ''
         setBranchName(name)
         setBranchNameInput(name)
       })
@@ -50,8 +50,7 @@ export default function AdminSettings() {
 
     const { error: err } = await supabase
       .from('settings')
-      .update({ value: branchNameInput.trim(), updated_at: new Date().toISOString() })
-      .eq('key', 'branch_name')
+      .upsert({ id: 1, branch_name: branchNameInput.trim(), updated_at: new Date().toISOString() })
 
     if (err) {
       setError('Something went wrong. Please try again.')
