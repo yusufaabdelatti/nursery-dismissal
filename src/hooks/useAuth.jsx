@@ -34,17 +34,19 @@ export function AuthProvider({ children }) {
       async (event, session) => {
         if (!mounted) return
 
-        if (session?.user) {
-          setUser(session.user)
-          const r = await fetchRole(session.user.id)
-          if (mounted) setRole(r)
-        } else {
-          setUser(null)
-          setRole(null)
-          localStorage.removeItem('userRole')
+        try {
+          if (session?.user) {
+            setUser(session.user)
+            const r = await fetchRole(session.user.id)
+            if (mounted) setRole(r)
+          } else {
+            setUser(null)
+            setRole(null)
+            localStorage.removeItem('userRole')
+          }
+        } finally {
+          if (mounted) setLoading(false)
         }
-
-        if (mounted) setLoading(false)
       }
     )
 

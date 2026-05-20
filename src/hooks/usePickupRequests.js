@@ -38,55 +38,29 @@ export function usePickupRequests() {
     setLoading(false)
   }
 
-  useEffect(() => {
-    fetchRequests()
-
+  const subscribe = () => {
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
     }
-
-    const channelName = `pickup_realtime_${Date.now()}`
-
     const channel = supabase
-      .channel(channelName)
+      .channel(`pickup_realtime_${Date.now()}`)
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pickup_requests',
-        },
-        (payload) => {
-          console.log('Realtime event:', payload.eventType, payload.new)
-          fetchRequests()
-        }
+        { event: '*', schema: 'public', table: 'pickup_requests' },
+        () => fetchRequests()
       )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status)
-      })
-
+      .subscribe()
     channelRef.current = channel
+  }
+
+  useEffect(() => {
+    fetchRequests()
+    subscribe()
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         fetchRequests()
-        if (channelRef.current) {
-          supabase.removeChannel(channelRef.current)
-        }
-        const newChannel = supabase
-          .channel(`pickup_realtime_${Date.now()}`)
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'pickup_requests' },
-            (payload) => {
-              console.log('Realtime event:', payload.eventType, payload.new)
-              fetchRequests()
-            }
-          )
-          .subscribe((status) => {
-            console.log('Realtime subscription status:', status)
-          })
-        channelRef.current = newChannel
+        subscribe()
       }
     }
 

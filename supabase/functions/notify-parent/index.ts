@@ -74,8 +74,6 @@ async function sendPush(
   if (!response.ok) {
     const text = await response.text()
     console.error('Push failed:', response.status, text)
-  } else {
-    console.log('Parent push sent OK')
   }
 }
 

@@ -72,7 +72,7 @@ export function usePushNotifications(userId) {
 
       setSubscribed(true)
     } catch (err) {
-      console.error('Push subscribe error:', err)
+      // subscribe failed — error state shown in UI
       setError(err.message ?? 'Something went wrong.')
     }
   }

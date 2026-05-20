@@ -78,72 +78,50 @@ async function sendPush(
   if (!response.ok) {
     const text = await response.text()
     console.error('Push send failed:', response.status, text)
-  } else {
-    console.log('Push sent OK to:', subscription.endpoint.substring(0, 50))
   }
 }
 
 Deno.serve(async (req) => {
   try {
     const body = await req.json()
-    console.log('Webhook received:', JSON.stringify(body.record))
-
     const record = body.record
     const oldRecord = body.old_record
 
-    // Determine notification type — handle INSERT (new request) and UPDATE (arrived)
-    let notificationType: 'new_request' | 'parent_arrived' | null = null
+    // Only handle: new request (INSERT/requested) or parent arrived (UPDATE/arrived)
+    const isNewRequest = body.type === 'INSERT' && record.status === 'requested'
+    const isArrived = body.type === 'UPDATE' && record.status === 'arrived' && oldRecord?.status !== 'arrived'
+    if (!isNewRequest && !isArrived) return new Response('ok')
 
-    if (body.type === 'INSERT' && record.status === 'requested') {
-      notificationType = 'new_request'
-    } else if (body.type === 'UPDATE' && record.status === 'arrived' && oldRecord?.status !== 'arrived') {
-      notificationType = 'parent_arrived'
-    }
-
-    if (!notificationType) {
-      console.log('No actionable event:', body.type, record.status)
-      return new Response('ok')
-    }
-
-    if (!record?.child_id) {
-      console.log('No child_id in record')
-      return new Response('ok')
-    }
+    if (!record?.child_id) return new Response('ok')
 
     // Step 1: get the child's class
-    const { data: child, error: childError } = await supabase
+    const { data: child } = await supabase
       .from('children')
       .select('class_id, full_name')
       .eq('id', record.child_id)
       .single()
 
-    console.log('Child:', child, 'Error:', childError)
     if (!child?.class_id) return new Response('ok')
 
-
     // Step 2: get staff IDs assigned to this class
-    const { data: staffRows, error: staffError } = await supabase
+    const { data: staffRows } = await supabase
       .from('staff_profiles')
       .select('id')
       .eq('class_id', child.class_id)
 
-    console.log('Staff rows:', JSON.stringify(staffRows), 'Error:', staffError)
     if (!staffRows?.length) return new Response('ok')
 
     const staffIds = staffRows.map((s: { id: string }) => s.id)
 
     // Step 3: get push subscriptions for those staff members
-    const { data: subs, error: subsError } = await supabase
+    const { data: subs } = await supabase
       .from('push_subscriptions')
       .select('subscription')
       .in('user_id', staffIds)
 
-    console.log('Subscriptions:', JSON.stringify(subs), 'Error:', subsError)
     if (!subs?.length) return new Response('ok')
 
-    // Step 4: send push to each subscription (bodyless — FCM requires encrypted
-    // payloads; we skip encryption and let the service worker show a fixed notification)
-    console.log('Sending', notificationType, 'push to', subs.length, 'subscriber(s)')
+    // Step 4: send bodyless push to each subscription
     for (const sub of subs) {
       try {
         const parsed = JSON.parse(sub.subscription)
