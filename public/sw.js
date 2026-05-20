@@ -1,23 +1,11 @@
 self.addEventListener('install', () => self.skipWaiting())
+
 self.addEventListener('activate', (event) => event.waitUntil(clients.claim()))
 
 self.addEventListener('push', (event) => {
-  let title = '🔔 Nursery Update'
-  let body = 'Tap to open the app'
-
-  if (event.data) {
-    try {
-      const data = JSON.parse(event.data.text())
-      title = data.title || title
-      body = data.body || body
-    } catch {
-      // use defaults
-    }
-  }
-
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
+    self.registration.showNotification('🔔 New Pickup Request', {
+      body: 'A child in your class needs to be picked up. Tap to open.',
       icon: '/icon.png',
       badge: '/icon.png',
       vibrate: [300, 100, 300, 100, 300],

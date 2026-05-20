@@ -13,8 +13,7 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
 }
 
 async function sendPush(
-  subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
-  notificationPayload: { title: string; body: string }
+  subscription: { endpoint: string; keys: { p256dh: string; auth: string } }
 ) {
   const vapidPublic = Deno.env.get('VAPID_PUBLIC_KEY')!
   const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY')!
@@ -71,10 +70,9 @@ async function sendPush(
     method: 'POST',
     headers: {
       'Authorization': vapidAuth,
-      'Content-Type': 'text/plain;charset=UTF-8',
       'TTL': '60',
     },
-    body: JSON.stringify(notificationPayload),
+    body: null,
   })
 
   if (!response.ok) {
@@ -122,10 +120,6 @@ Deno.serve(async (req) => {
     console.log('Child:', child, 'Error:', childError)
     if (!child?.class_id) return new Response('ok')
 
-    const firstName = child.full_name.split(' ')[0]
-    const notificationPayload = notificationType === 'parent_arrived'
-      ? { title: '⚡ Parent Has Arrived!', body: `${firstName}'s parent is at the door — please bring them now` }
-      : { title: '🔔 New Pickup Request', body: `${firstName} needs to be picked up` }
 
     // Step 2: get staff IDs assigned to this class
     const { data: staffRows, error: staffError } = await supabase
@@ -153,7 +147,7 @@ Deno.serve(async (req) => {
     for (const sub of subs) {
       try {
         const parsed = JSON.parse(sub.subscription)
-        await sendPush(parsed, notificationPayload)
+        await sendPush(parsed)
       } catch (e) {
         console.error('Send error:', e)
       }

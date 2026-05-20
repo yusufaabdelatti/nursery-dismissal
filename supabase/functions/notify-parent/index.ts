@@ -13,8 +13,7 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
 }
 
 async function sendPush(
-  subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
-  notificationPayload: { title: string; body: string }
+  subscription: { endpoint: string; keys: { p256dh: string; auth: string } }
 ) {
   const vapidPublic = Deno.env.get('VAPID_PUBLIC_KEY')!
   const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY')!
@@ -67,10 +66,9 @@ async function sendPush(
     method: 'POST',
     headers: {
       'Authorization': vapidAuth,
-      'Content-Type': 'text/plain;charset=UTF-8',
       'TTL': '60',
     },
-    body: JSON.stringify(notificationPayload),
+    body: null,
   })
 
   if (!response.ok) {
@@ -100,8 +98,6 @@ Deno.serve(async (req) => {
 
     if (!child?.parent_user_id) return new Response('ok')
 
-    const firstName = child.full_name.split(' ')[0]
-
     const { data: sub } = await supabase
       .from('push_subscriptions')
       .select('subscription')
@@ -111,10 +107,7 @@ Deno.serve(async (req) => {
     if (!sub) return new Response('ok')
 
     const parsed = JSON.parse(sub.subscription)
-    await sendPush(parsed, {
-      title: '🌟 Your child is ready!',
-      body: `${firstName} is ready and waiting for you — come on over 💛`,
-    })
+    await sendPush(parsed)
 
     return new Response('ok')
   } catch (err) {
