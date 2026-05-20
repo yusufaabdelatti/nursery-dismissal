@@ -17,49 +17,49 @@ export default function RequestRow({ request, tick }) {
 
   return (
     <div
-      className={`flex items-center px-6 rounded-lg mb-2 transition-all ${
+      className={`flex items-center px-6 rounded-lg mb-1.5 transition-all ${
         isArrived ? 'arrived-pulse' : ''
       }`}
       style={{
-        height: '64px',
+        height: '60px',
         backgroundColor: `${classColor}12`,
-        borderLeft: `4px solid ${classColor}`,
-        boxShadow: isArrived ? `0 0 16px ${classColor}66` : 'none',
+        borderLeft: `5px solid ${classColor}`,
+        boxShadow: isArrived ? `0 0 18px ${classColor}66` : 'none',
       }}
     >
       {/* Class color dot */}
       <div
-        className="w-3 h-3 rounded-full flex-shrink-0 mr-4"
+        className="w-4 h-4 rounded-full flex-shrink-0 mr-4"
         style={{ backgroundColor: classColor }}
       />
 
       {/* Child name */}
-      <div className="flex-1 text-xl font-semibold text-white truncate mr-4">
+      <div className="flex-1 text-3xl font-black text-white truncate mr-6">
         {childName}
       </div>
 
       {/* Class label */}
       <div
-        className="text-sm font-medium mr-8 w-20 text-center shrink-0"
+        className="text-lg font-semibold mr-8 w-28 text-center shrink-0"
         style={{ color: classColor }}
       >
         {className}
       </div>
 
       {/* Status / countdown */}
-      <div className="w-36 text-right shrink-0 font-mono">
+      <div className="w-44 text-right shrink-0 font-mono">
         {isArrived ? (
-          <span className="text-white font-bold text-lg tracking-wide">
+          <span className="text-white font-black text-2xl tracking-wide">
             ⚡ ARRIVED
           </span>
         ) : isReady ? (
-          <span className="text-green-400 font-bold text-lg">Ready</span>
+          <span className="text-green-400 font-black text-2xl">Ready</span>
         ) : countdownText ? (
-          <span className="text-gray-200 text-lg tabular-nums">
+          <span className="text-gray-200 text-2xl font-bold tabular-nums">
             {countdownText}
           </span>
         ) : (
-          <span className="text-amber-500 text-sm">Arriving Soon</span>
+          <span className="text-amber-500 font-bold text-lg">Arriving Soon</span>
         )}
       </div>
     </div>
