@@ -2,13 +2,26 @@ self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (event) => event.waitUntil(clients.claim()))
 
 self.addEventListener('push', (event) => {
+  let title = '🔔 Nursery Update'
+  let body = 'Tap to open the app'
+
+  if (event.data) {
+    try {
+      const data = JSON.parse(event.data.text())
+      title = data.title || title
+      body = data.body || body
+    } catch {
+      // use defaults
+    }
+  }
+
   event.waitUntil(
-    self.registration.showNotification('New Pickup Request 🔔', {
-      body: 'A child in your class is ready for pickup. Tap to open.',
+    self.registration.showNotification(title, {
+      body,
       icon: '/icon.png',
       badge: '/icon.png',
       vibrate: [300, 100, 300, 100, 300],
-      tag: 'pickup-request',
+      tag: 'nursery-notification',
       renotify: true,
     })
   )
@@ -19,11 +32,9 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes('/staff') && 'focus' in client) {
-          return client.focus()
-        }
+        if ('focus' in client) return client.focus()
       }
-      return clients.openWindow('/staff')
+      return clients.openWindow('/')
     })
   )
 })

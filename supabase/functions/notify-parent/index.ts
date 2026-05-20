@@ -23,7 +23,6 @@ async function sendPush(
   const audience = `${url.protocol}//${url.host}`
   const subject = 'mailto:admin@nursery.com'
 
-  // Build JWK from raw VAPID key bytes so Web Crypto can import it
   const privateKeyBytes = base64urlToUint8Array(vapidPrivate)
   const publicKeyBytes = base64urlToUint8Array(vapidPublic)
 
@@ -40,14 +39,11 @@ async function sendPush(
   }
 
   const privateKey = await crypto.subtle.importKey(
-    'jwk',
-    privateJwk,
+    'jwk', privateJwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign']
+    false, ['sign']
   )
 
-  // Build VAPID JWT
   const now = Math.floor(Date.now() / 1000)
   const header = { typ: 'JWT', alg: 'ES256' }
   const claims = { aud: audience, exp: now + 43200, sub: subject }
@@ -79,85 +75,46 @@ async function sendPush(
 
   if (!response.ok) {
     const text = await response.text()
-    console.error('Push send failed:', response.status, text)
+    console.error('Push failed:', response.status, text)
   } else {
-    console.log('Push sent OK to:', subscription.endpoint.substring(0, 50))
+    console.log('Parent push sent OK')
   }
 }
 
 Deno.serve(async (req) => {
   try {
     const body = await req.json()
-    console.log('Webhook received:', JSON.stringify(body.record))
-
     const record = body.record
     const oldRecord = body.old_record
 
-    // Determine notification type — handle INSERT (new request) and UPDATE (arrived)
-    let notificationType: 'new_request' | 'parent_arrived' | null = null
-
-    if (body.type === 'INSERT' && record.status === 'requested') {
-      notificationType = 'new_request'
-    } else if (body.type === 'UPDATE' && record.status === 'arrived' && oldRecord?.status !== 'arrived') {
-      notificationType = 'parent_arrived'
-    }
-
-    if (!notificationType) {
-      console.log('No actionable event:', body.type, record.status)
+    // Only fire when transitioning into 'ready'
+    if (record.status !== 'ready' || oldRecord?.status === 'ready') {
       return new Response('ok')
     }
 
-    if (!record?.child_id) {
-      console.log('No child_id in record')
-      return new Response('ok')
-    }
-
-    // Step 1: get the child's class
-    const { data: child, error: childError } = await supabase
+    const { data: child } = await supabase
       .from('children')
-      .select('class_id, full_name')
+      .select('full_name, parent_user_id')
       .eq('id', record.child_id)
       .single()
 
-    console.log('Child:', child, 'Error:', childError)
-    if (!child?.class_id) return new Response('ok')
+    if (!child?.parent_user_id) return new Response('ok')
 
     const firstName = child.full_name.split(' ')[0]
-    const notificationPayload = notificationType === 'parent_arrived'
-      ? { title: '⚡ Parent Has Arrived!', body: `${firstName}'s parent is at the door — please bring them now` }
-      : { title: '🔔 New Pickup Request', body: `${firstName} needs to be picked up` }
 
-    // Step 2: get staff IDs assigned to this class
-    const { data: staffRows, error: staffError } = await supabase
-      .from('staff_profiles')
-      .select('id')
-      .eq('class_id', child.class_id)
-
-    console.log('Staff rows:', JSON.stringify(staffRows), 'Error:', staffError)
-    if (!staffRows?.length) return new Response('ok')
-
-    const staffIds = staffRows.map((s: { id: string }) => s.id)
-
-    // Step 3: get push subscriptions for those staff members
-    const { data: subs, error: subsError } = await supabase
+    const { data: sub } = await supabase
       .from('push_subscriptions')
       .select('subscription')
-      .in('user_id', staffIds)
+      .eq('user_id', child.parent_user_id)
+      .maybeSingle()
 
-    console.log('Subscriptions:', JSON.stringify(subs), 'Error:', subsError)
-    if (!subs?.length) return new Response('ok')
+    if (!sub) return new Response('ok')
 
-    // Step 4: send push to each subscription (bodyless — FCM requires encrypted
-    // payloads; we skip encryption and let the service worker show a fixed notification)
-    console.log('Sending', notificationType, 'push to', subs.length, 'subscriber(s)')
-    for (const sub of subs) {
-      try {
-        const parsed = JSON.parse(sub.subscription)
-        await sendPush(parsed, notificationPayload)
-      } catch (e) {
-        console.error('Send error:', e)
-      }
-    }
+    const parsed = JSON.parse(sub.subscription)
+    await sendPush(parsed, {
+      title: '🌟 Your child is ready!',
+      body: `${firstName} is ready and waiting for you — come on over 💛`,
+    })
 
     return new Response('ok')
   } catch (err) {

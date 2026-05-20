@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
+import { usePushNotifications } from '../../hooks/usePushNotifications'
 
 export default function ParentApp() {
   const { user } = useAuth()
@@ -157,6 +158,8 @@ export default function ParentApp() {
   const accentColor = child?.classes?.color || '#3B82F6'
   const firstName = child?.full_name?.split(' ')[0] || child?.full_name || ''
 
+  const { permission, subscribed, error: pushError, subscribe } = usePushNotifications(user?.id)
+
   // State E — goodbye after delivered/cleared
   if (showGoodbye) {
     return (
@@ -204,6 +207,22 @@ export default function ParentApp() {
         {/* State A — no active request */}
         {!request && (
           <div className="w-full max-w-sm text-center">
+            {permission !== 'granted' && !subscribed && (
+              <div className="bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl mb-6 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-amber-800">
+                    Get notified when your child is ready for pickup
+                  </span>
+                  <button
+                    onClick={subscribe}
+                    className="ml-3 bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0"
+                  >
+                    Enable
+                  </button>
+                </div>
+                {pushError && <p className="text-red-600 text-xs mt-2">{pushError}</p>}
+              </div>
+            )}
             <p className="text-gray-500 mb-8 text-lg">Ready for pickup?</p>
             <button
               onClick={requestPickup}
