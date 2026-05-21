@@ -4,8 +4,9 @@ import App from './App.jsx'
 import './index.css'
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+  window.addEventListener('load', async () => {
+    const reg = await navigator.serviceWorker.register('/sw.js')
+    reg.update() // Force check for new version every load
   })
 }
 
