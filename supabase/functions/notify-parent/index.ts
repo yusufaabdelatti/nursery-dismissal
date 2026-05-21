@@ -1,81 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import webPush from 'npm:web-push@3.6.7'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
-function base64urlToUint8Array(base64url: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64url.length % 4)) % 4)
-  const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/')
-  const raw = atob(base64)
-  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)))
-}
-
-async function sendPush(
-  subscription: { endpoint: string; keys: { p256dh: string; auth: string } }
-) {
-  const vapidPublic = Deno.env.get('VAPID_PUBLIC_KEY')!
-  const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY')!
-
-  const url = new URL(subscription.endpoint)
-  const audience = `${url.protocol}//${url.host}`
-  const subject = 'mailto:admin@nursery.com'
-
-  const privateKeyBytes = base64urlToUint8Array(vapidPrivate)
-  const publicKeyBytes = base64urlToUint8Array(vapidPublic)
-
-  const privateJwk = {
-    kty: 'EC',
-    crv: 'P-256',
-    x: btoa(String.fromCharCode(...publicKeyBytes.slice(1, 33)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
-    y: btoa(String.fromCharCode(...publicKeyBytes.slice(33)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
-    d: vapidPrivate,
-    key_ops: ['sign'],
-    ext: true,
-  }
-
-  const privateKey = await crypto.subtle.importKey(
-    'jwk', privateJwk,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false, ['sign']
-  )
-
-  const now = Math.floor(Date.now() / 1000)
-  const header = { typ: 'JWT', alg: 'ES256' }
-  const claims = { aud: audience, exp: now + 43200, sub: subject }
-
-  const encode = (obj: object) =>
-    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-
-  const unsignedToken = `${encode(header)}.${encode(claims)}`
-  const sigBytes = await crypto.subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' },
-    privateKey,
-    new TextEncoder().encode(unsignedToken)
-  )
-  const sig = btoa(String.fromCharCode(...new Uint8Array(sigBytes)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-
-  const token = `${unsignedToken}.${sig}`
-  const vapidAuth = `vapid t=${token},k=${vapidPublic}`
-
-  const response = await fetch(subscription.endpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': vapidAuth,
-      'TTL': '60',
-    },
-    body: null,
-  })
-
-  if (!response.ok) {
-    const text = await response.text()
-    console.error('Push failed:', response.status, text)
-  }
-}
+webPush.setVapidDetails(
+  'mailto:admin@nursery.com',
+  Deno.env.get('VAPID_PUBLIC_KEY')!,
+  Deno.env.get('VAPID_PRIVATE_KEY')!
+)
 
 Deno.serve(async (req) => {
   try {
@@ -83,7 +18,6 @@ Deno.serve(async (req) => {
     const record = body.record
     const oldRecord = body.old_record
 
-    // Only fire when transitioning into 'ready'
     if (record.status !== 'ready' || oldRecord?.status === 'ready') {
       return new Response('ok')
     }
@@ -96,6 +30,8 @@ Deno.serve(async (req) => {
 
     if (!child?.parent_user_id) return new Response('ok')
 
+    const firstName = child.full_name.split(' ')[0]
+
     const { data: sub } = await supabase
       .from('push_subscriptions')
       .select('subscription')
@@ -105,11 +41,15 @@ Deno.serve(async (req) => {
     if (!sub) return new Response('ok')
 
     const parsed = JSON.parse(sub.subscription)
-    await sendPush(parsed)
+    await webPush.sendNotification(parsed, JSON.stringify({
+      title: '🌟 Your child is ready!',
+      body: `${firstName} is ready and waiting for you — come on over 💛`,
+    }))
 
+    console.log('Parent push sent OK')
     return new Response('ok')
   } catch (err) {
-    console.error('Function error:', err)
+    console.error('Function error:', String(err))
     return new Response('error', { status: 500 })
   }
 })
