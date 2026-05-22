@@ -12,7 +12,7 @@ export default function ParentApp() {
   const [error, setError] = useState(null)
   const [showGoodbye, setShowGoodbye] = useState(false)
   const channelRef = useRef(null)
-  const { permission, subscribed, error: pushError, subscribe } = usePushNotifications(user?.id)
+  const { status, errorMsg, isSupported, subscribe } = usePushNotifications(user?.id)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -186,20 +186,12 @@ export default function ParentApp() {
             </p>
             <h1 className="text-3xl font-bold mt-1">{child?.full_name}</h1>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <button
-              onClick={subscribe}
-              className="text-white text-opacity-70 text-xs border border-white border-opacity-30 rounded px-2 py-1"
-            >
-              🔔
-            </button>
-            <button
-              onClick={logout}
-              className="text-white text-opacity-70 text-xs border border-white border-opacity-30 rounded px-2 py-1"
-            >
-              Sign out
-            </button>
-          </div>
+          <button
+            onClick={logout}
+            className="text-white text-opacity-70 text-xs border border-white border-opacity-30 rounded px-2 py-1 mt-1"
+          >
+            Sign out
+          </button>
         </div>
       </div>
 
@@ -214,21 +206,22 @@ export default function ParentApp() {
         {/* State A — no active request */}
         {!request && (
           <div className="w-full max-w-sm text-center">
-            {permission !== 'granted' && !subscribed && (
-              <div className="bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl mb-6 text-left">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-amber-800">
-                    Get notified when your child is ready for pickup
-                  </span>
-                  <button
-                    onClick={subscribe}
-                    className="ml-3 bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0"
-                  >
-                    Enable
-                  </button>
-                </div>
-                {pushError && <p className="text-red-600 text-xs mt-2">{pushError}</p>}
+            {isSupported && status !== 'subscribed' && status !== 'denied' && (
+              <div className="w-full max-w-sm bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl mb-4 flex items-center justify-between">
+                <span className="text-sm text-amber-800">
+                  Get notified when your child is ready
+                </span>
+                <button
+                  onClick={subscribe}
+                  disabled={status === 'requesting'}
+                  className="ml-3 bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+                >
+                  {status === 'requesting' ? '…' : 'Enable'}
+                </button>
               </div>
+            )}
+            {errorMsg && (
+              <p className="text-red-600 text-xs mb-4">{errorMsg}</p>
             )}
             <p className="text-gray-500 mb-8 text-lg">Ready for pickup?</p>
             <button

@@ -109,7 +109,7 @@ export default function StaffApp() {
   const [error, setError] = useState(null)
 
   const { requests, loading, removeRequest } = usePickupRequests()
-  const { permission, subscribed, error: pushError, subscribe } = usePushNotifications(user?.id)
+  const { status, errorMsg, isSupported, subscribe } = usePushNotifications(user?.id)
 
   const filtered = selectedClass
     ? requests.filter((r) => r.children?.class_id === selectedClass)
@@ -189,13 +189,6 @@ export default function StaffApp() {
         </select>
 
         <button
-          onClick={subscribe}
-          className="text-gray-500 hover:text-gray-800 text-sm px-3 py-2 border border-gray-200 rounded-lg transition-colors"
-        >
-          🔔 Notifications
-        </button>
-
-        <button
           onClick={logout}
           className="text-gray-500 hover:text-gray-800 text-sm px-3 py-2 border border-gray-200 rounded-lg transition-colors"
         >
@@ -203,12 +196,32 @@ export default function StaffApp() {
         </button>
       </div>
 
+      {isSupported && status !== 'subscribed' && status !== 'denied' && (
+        <div className="bg-blue-50 border-b border-blue-200 px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-blue-800">
+            Enable notifications to get alerted for new pickup requests
+          </span>
+          <button
+            onClick={subscribe}
+            disabled={status === 'requesting'}
+            className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+          >
+            {status === 'requesting' ? 'Enabling…' : 'Enable'}
+          </button>
+        </div>
+      )}
+      {status === 'denied' && (
+        <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-sm text-red-700">
+          Notifications blocked. Please enable them in your browser settings.
+        </div>
+      )}
+      {errorMsg && (
+        <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      )}
+
       <div className="flex-1 p-4 max-w-2xl mx-auto w-full">
-        {pushError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
-            {pushError}
-          </div>
-        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-3 text-sm">

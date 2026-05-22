@@ -6,14 +6,37 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 )
 
-const vapidPublic = Deno.env.get('VAPID_PUBLIC_KEY')!
-const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY')!
-
 webPush.setVapidDetails(
   'mailto:admin@nursery.com',
-  vapidPublic,
-  vapidPrivate
+  Deno.env.get('VAPID_PUBLIC_KEY')!,
+  Deno.env.get('VAPID_PRIVATE_KEY')!
 )
+
+async function sendToUser(userId: string, payload: object) {
+  const { data: subs } = await supabase
+    .from('push_subscriptions')
+    .select('subscription, endpoint')
+    .eq('user_id', userId)
+
+  if (!subs?.length) return
+
+  for (const sub of subs) {
+    try {
+      const parsed = JSON.parse(sub.subscription)
+      await webPush.sendNotification(parsed, JSON.stringify(payload))
+      console.log('Sent to:', sub.endpoint.substring(0, 50))
+    } catch (e: any) {
+      console.error('Failed:', e.statusCode, e.message)
+      if (e.statusCode === 404 || e.statusCode === 410) {
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', sub.endpoint)
+        console.log('Removed stale subscription')
+      }
+    }
+  }
+}
 
 Deno.serve(async (req) => {
   try {
@@ -22,7 +45,9 @@ Deno.serve(async (req) => {
     const oldRecord = body.old_record
 
     const isNewRequest = body.type === 'INSERT' && record?.status === 'requested'
-    const isArrived = body.type === 'UPDATE' && record?.status === 'arrived' && oldRecord?.status !== 'arrived'
+    const isArrived = body.type === 'UPDATE'
+      && record?.status === 'arrived'
+      && oldRecord?.status !== 'arrived'
 
     if (!isNewRequest && !isArrived) return new Response('ok')
     if (!record?.child_id) return new Response('ok')
@@ -37,7 +62,7 @@ Deno.serve(async (req) => {
 
     const firstName = child.full_name.split(' ')[0]
 
-    const notificationPayload = isArrived
+    const payload = isArrived
       ? { title: '⚡ Parent Has Arrived!', body: `${firstName}'s parent is at the door` }
       : { title: '🔔 New Pickup Request', body: `${firstName} needs to be picked up` }
 
@@ -48,36 +73,11 @@ Deno.serve(async (req) => {
 
     if (!staffRows?.length) return new Response('ok')
 
-    const staffIds = staffRows.map((s: any) => s.id)
-
-    const { data: subs } = await supabase
-      .from('push_subscriptions')
-      .select('subscription')
-      .in('user_id', staffIds)
-
-    if (!subs?.length) return new Response('ok')
-
-    for (const sub of subs) {
-      try {
-        const parsed = JSON.parse(sub.subscription)
-        await webPush.sendNotification(parsed, JSON.stringify(notificationPayload))
-        console.log('Push sent OK')
-      } catch (e: any) {
-        console.error('Push failed:', e.statusCode, e.message)
-        // Remove expired/invalid subscriptions (404 = not found, 410 = unsubscribed)
-        if (e.statusCode === 404 || e.statusCode === 410) {
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('endpoint', parsed.endpoint)
-          console.log('Removed expired subscription:', parsed.endpoint.substring(0, 40))
-        }
-      }
-    }
+    await Promise.all(staffRows.map((s: any) => sendToUser(s.id, payload)))
 
     return new Response('ok')
   } catch (err) {
-    console.error('Function error:', String(err))
+    console.error('Error:', String(err))
     return new Response('error', { status: 500 })
   }
 })
