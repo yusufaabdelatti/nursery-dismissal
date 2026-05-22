@@ -1,29 +1,33 @@
-// sw version 2
-self.addEventListener('install', () => self.skipWaiting())
-self.addEventListener('activate', (event) => event.waitUntil(clients.claim()))
+// sw-v3
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting())
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim())
+})
 
 self.addEventListener('push', (event) => {
-  let title = '🔔 Nursery Update'
+  let title = '🔔 Nursery Notification'
   let body = 'Tap to open the app'
+  let icon = '/icon.png'
 
-  if (event.data) {
-    try {
+  try {
+    if (event.data) {
       const data = JSON.parse(event.data.text())
-      title = data.title || title
-      body = data.body || body
-    } catch {
-      // use defaults
+      if (data.title) title = data.title
+      if (data.body) body = data.body
     }
-  }
+  } catch (e) {}
 
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: '/icon.png',
-      badge: '/icon.png',
-      vibrate: [300, 100, 300],
-      tag: 'nursery',
-      renotify: true,
+      icon,
+      badge: icon,
+      vibrate: [200, 100, 200],
+      tag: 'nursery-' + Date.now(),
+      requireInteraction: false,
     })
   )
 })
@@ -32,8 +36,8 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((list) => {
-        for (const client of list) {
+      .then((windowClients) => {
+        for (const client of windowClients) {
           if ('focus' in client) return client.focus()
         }
         return clients.openWindow('/')
