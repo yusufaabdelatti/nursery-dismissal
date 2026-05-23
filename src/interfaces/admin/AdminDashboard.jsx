@@ -56,12 +56,12 @@ export default function AdminDashboard() {
         style={{ backgroundColor: '#1E2D3D' }}
       >
         {/* Logo area */}
-        <div className="p-5 border-b border-white border-opacity-10">
-          <div style={{ background: '#FFFFFF', borderRadius: '10px', padding: '10px 16px', marginBottom: '8px' }}>
-            <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ width: '140px', height: 'auto', display: 'block' }} onError={(e) => { e.target.style.display = 'none' }} />
+        <div className="p-5 border-b border-white border-opacity-10 flex flex-col items-center text-center">
+          <div style={{ background: '#FFFFFF', borderRadius: '10px', padding: '8px 12px', marginBottom: '10px', display: 'inline-flex' }}>
+            <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ width: '80px', height: 'auto', display: 'block' }} onError={(e) => { e.target.style.display = 'none' }} />
           </div>
           <p className="text-white font-bold text-sm">KiddyTech Admin</p>
-          <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-xs mt-0.5 truncate w-full" style={{ color: 'rgba(255,255,255,0.6)' }}>
             {user?.email}
           </p>
         </div>
