@@ -76,12 +76,9 @@ function LiveBoard({ audioCtx, branchName }) {
       <div className="flex justify-between items-center px-8 py-5 border-b border-gray-800">
         <div>
           <div className="flex items-center gap-3">
-            <img
-              src="/kiddytech-logo.png"
-              alt="KiddyTech"
-              style={{ height: '28px' }}
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
+            <div style={{ background: '#FFFFFF', borderRadius: '8px', padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
+              <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ height: '28px', width: 'auto' }} onError={(e) => { e.target.style.display = 'none' }} />
+            </div>
             <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#4AADA0' }}>
               KIDDYTECH
             </span>
@@ -154,12 +151,9 @@ export default function DisplayScreen() {
       >
         <div className="text-center px-8">
           <div className="flex flex-col items-center mb-6">
-            <img
-              src="/kiddytech-logo.png"
-              alt="KiddyTech"
-              style={{ height: '56px', marginBottom: '12px' }}
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
+            <div style={{ background: '#FFFFFF', borderRadius: '12px', padding: '8px 16px', marginBottom: '12px', display: 'inline-flex', alignItems: 'center' }}>
+              <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ height: '40px', width: 'auto' }} onError={(e) => { e.target.style.display = 'none' }} />
+            </div>
             <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#4AADA0' }}>
               KIDDYTECH
             </span>

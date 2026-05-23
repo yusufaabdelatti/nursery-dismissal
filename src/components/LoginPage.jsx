@@ -47,12 +47,9 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-xl">
         {/* Logo */}
         <div className="flex flex-col items-center mb-6">
-          <img
-            src="/kiddytech-logo.png"
-            alt="KiddyTech"
-            style={{ width: '160px', marginBottom: '12px' }}
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
+          <div style={{ background: '#FFFFFF', borderRadius: '12px', padding: '12px 20px', display: 'inline-block', marginBottom: '12px' }}>
+            <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ width: '160px', height: 'auto', display: 'block' }} onError={(e) => { e.target.style.display = 'none' }} />
+          </div>
           <h1 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>KiddyTech</h1>
           <p className="text-xs mt-1" style={{ color: '#4A5568' }}>Smart Dismissal System</p>
         </div>

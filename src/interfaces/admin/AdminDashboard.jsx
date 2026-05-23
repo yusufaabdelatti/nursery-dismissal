@@ -57,12 +57,9 @@ export default function AdminDashboard() {
       >
         {/* Logo area */}
         <div className="p-5 border-b border-white border-opacity-10">
-          <img
-            src="/kiddytech-logo.png"
-            alt="KiddyTech"
-            style={{ width: '140px', marginBottom: '8px' }}
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
+          <div style={{ background: '#FFFFFF', borderRadius: '10px', padding: '10px 16px', marginBottom: '8px' }}>
+            <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ width: '140px', height: 'auto', display: 'block' }} onError={(e) => { e.target.style.display = 'none' }} />
+          </div>
           <p className="text-white font-bold text-sm">KiddyTech Admin</p>
           <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
             {user?.email}
@@ -112,12 +109,9 @@ export default function AdminDashboard() {
           >
             <Hamburger />
           </button>
-          <img
-            src="/kiddytech-logo.png"
-            alt="KiddyTech"
-            style={{ height: '24px' }}
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
+          <div style={{ background: '#FFFFFF', borderRadius: '6px', padding: '3px 8px', display: 'inline-flex', alignItems: 'center' }}>
+            <img src="/kiddytech-logo.png" alt="KiddyTech" style={{ height: '20px', width: 'auto' }} onError={(e) => { e.target.style.display = 'none' }} />
+          </div>
           <span className="font-semibold text-white text-sm">
             KiddyTech Admin
           </span>
