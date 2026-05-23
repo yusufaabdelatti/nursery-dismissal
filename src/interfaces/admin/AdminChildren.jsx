@@ -7,7 +7,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-bold" style={{ color: '#1E2D3D' }}>{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -26,7 +26,7 @@ const EMPTY_FORM = { full_name: '', class_id: '', parent_user_id: '' }
 export default function AdminChildren() {
   const [children, setChildren] = useState([])
   const [classes, setClasses] = useState([])
-  const [parents, setParents] = useState([]) // {id, email}
+  const [parents, setParents] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -62,7 +62,6 @@ export default function AdminChildren() {
         supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
       ])
 
-    // Fetch staff IDs to identify which users are parents (not staff)
     const { data: staffData } = await supabase
       .from('staff_profiles')
       .select('id')
@@ -138,16 +137,17 @@ export default function AdminChildren() {
   }
 
   if (loading) {
-    return <div className="text-gray-400 py-12 text-center">Loading…</div>
+    return <div className="py-12 text-center" style={{ color: '#4A5568' }}>Loading…</div>
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Children</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>Children</h1>
         <button
           onClick={openAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          style={{ backgroundColor: '#4AADA0' }}
         >
           Add Child
         </button>
@@ -156,11 +156,11 @@ export default function AdminChildren() {
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="border-b bg-gray-50">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Class</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Parent Email</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Active</th>
+            <tr className="border-b" style={{ backgroundColor: '#F0F4F8' }}>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Name</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Class</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Parent Email</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Active</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -172,7 +172,7 @@ export default function AdminChildren() {
                   !child.is_active ? 'opacity-50' : ''
                 }`}
               >
-                <td className="px-4 py-3 font-medium text-gray-900">
+                <td className="px-4 py-3 font-medium" style={{ color: '#1E2D3D' }}>
                   {child.full_name}
                 </td>
                 <td className="px-4 py-3">
@@ -194,18 +194,18 @@ export default function AdminChildren() {
                     <span className="text-gray-400 text-xs">No class</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">
+                <td className="px-4 py-3 text-xs" style={{ color: '#4A5568' }}>
                   {child.parent_user_id
                     ? parentEmailMap[child.parent_user_id] || '—'
                     : '—'}
                 </td>
                 <td className="px-4 py-3">
                   <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      child.is_active
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-500'
-                    }`}
+                    className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={child.is_active
+                      ? { backgroundColor: '#E8F5F4', color: '#4AADA0' }
+                      : { backgroundColor: '#F3F4F6', color: '#6B7280' }
+                    }
                   >
                     {child.is_active ? 'Active' : 'Inactive'}
                   </span>
@@ -213,7 +213,8 @@ export default function AdminChildren() {
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <button
                     onClick={() => openEdit(child)}
-                    className="text-blue-600 hover:underline text-xs mr-3"
+                    className="hover:underline text-xs mr-3"
+                    style={{ color: '#4AADA0' }}
                   >
                     Edit
                   </button>
@@ -254,7 +255,8 @@ export default function AdminChildren() {
             </label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{ '--tw-ring-color': '#4AADA0' }}
               value={form.full_name}
               onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
             />
@@ -265,7 +267,7 @@ export default function AdminChildren() {
               Class
             </label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.class_id}
               onChange={(e) => setForm((f) => ({ ...f, class_id: e.target.value }))}
             >
@@ -283,7 +285,7 @@ export default function AdminChildren() {
               Parent Account
             </label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.parent_user_id}
               onChange={(e) =>
                 setForm((f) => ({ ...f, parent_user_id: e.target.value }))
@@ -308,7 +310,8 @@ export default function AdminChildren() {
             <button
               onClick={save}
               disabled={saving}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 text-sm text-white rounded-lg disabled:opacity-50 transition-colors"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

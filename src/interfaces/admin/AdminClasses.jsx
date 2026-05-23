@@ -6,7 +6,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-bold" style={{ color: '#1E2D3D' }}>{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -120,16 +120,17 @@ export default function AdminClasses() {
   }
 
   if (loading) {
-    return <div className="text-gray-400 py-12 text-center">Loading…</div>
+    return <div className="py-12 text-center" style={{ color: '#4A5568' }}>Loading…</div>
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Classes</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>Classes</h1>
         <button
           onClick={openAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          style={{ backgroundColor: '#4AADA0' }}
         >
           Add Class
         </button>
@@ -138,10 +139,10 @@ export default function AdminClasses() {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-gray-50">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Class</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Color</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Children</th>
+            <tr className="border-b" style={{ backgroundColor: '#F0F4F8' }}>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Class</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Color</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Children</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -154,7 +155,7 @@ export default function AdminClasses() {
                       className="w-4 h-4 rounded-full"
                       style={{ backgroundColor: cls.color }}
                     />
-                    <span className="font-medium text-gray-900">{cls.name}</span>
+                    <span className="font-medium" style={{ color: '#1E2D3D' }}>{cls.name}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-gray-500 font-mono text-xs">
@@ -166,7 +167,8 @@ export default function AdminClasses() {
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => openEdit(cls)}
-                    className="text-blue-600 hover:underline mr-4 text-xs"
+                    className="hover:underline mr-4 text-xs"
+                    style={{ color: '#4AADA0' }}
                   >
                     Edit
                   </button>
@@ -190,7 +192,6 @@ export default function AdminClasses() {
         </table>
       </div>
 
-      {/* Add / Edit modal */}
       {showModal && (
         <Modal
           title={editing ? 'Edit Class' : 'Add Class'}
@@ -208,7 +209,7 @@ export default function AdminClasses() {
             </label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             />
@@ -239,7 +240,8 @@ export default function AdminClasses() {
             <button
               onClick={save}
               disabled={saving}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 text-sm text-white rounded-lg disabled:opacity-50 transition-colors"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -247,7 +249,6 @@ export default function AdminClasses() {
         </Modal>
       )}
 
-      {/* Delete confirmation when children are assigned */}
       {deleteConfirm && (
         <Modal title="Cannot Delete Class" onClose={() => setDeleteConfirm(null)}>
           <p className="text-gray-700 text-sm mb-4">
@@ -259,7 +260,8 @@ export default function AdminClasses() {
           <div className="flex justify-end">
             <button
               onClick={() => setDeleteConfirm(null)}
-              className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg"
+              className="px-4 py-2 text-sm text-white rounded-lg"
+              style={{ backgroundColor: '#1E2D3D' }}
             >
               OK
             </button>

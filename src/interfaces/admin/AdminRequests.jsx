@@ -3,9 +3,9 @@ import { supabase } from '../../supabaseClient'
 import { usePickupRequests } from '../../hooks/usePickupRequests'
 
 const STATUS_STYLES = {
-  requested: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Requested' },
-  arrived:   { bg: 'bg-red-100',  text: 'text-red-700',  label: 'Arrived'   },
-  ready:     { bg: 'bg-green-100', text: 'text-green-700', label: 'Ready'   },
+  requested: { backgroundColor: '#E8F5F4', color: '#4AADA0', label: 'Requested' },
+  arrived:   { backgroundColor: '#FEF3C7', color: '#D97706', label: 'Arrived'   },
+  ready:     { backgroundColor: '#E8F5F4', color: '#4AADA0', label: 'Ready'     },
 }
 
 function formatTime(iso) {
@@ -23,7 +23,6 @@ export default function AdminRequests() {
       .from('pickup_requests')
       .update({ status: 'cleared' })
       .eq('id', id)
-    // real-time subscription in the hook will re-fetch automatically
   }
 
   const clearAll = async () => {
@@ -41,12 +40,13 @@ export default function AdminRequests() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Active Requests</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>Active Requests</h1>
         {requests.length > 0 && (
           <button
             onClick={() => setShowConfirm(true)}
             disabled={clearing}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+            className="text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+            style={{ backgroundColor: '#1E2D3D' }}
           >
             Clear All Active
           </button>
@@ -54,22 +54,22 @@ export default function AdminRequests() {
       </div>
 
       {loading && (
-        <div className="text-gray-400 py-12 text-center">Loading…</div>
+        <div className="py-12 text-center" style={{ color: '#4A5568' }}>Loading…</div>
       )}
 
       {!loading && requests.length === 0 && (
-        <div className="text-gray-400 py-12 text-center">No active pickup requests today</div>
+        <div className="py-12 text-center" style={{ color: '#4A5568' }}>No active pickup requests today</div>
       )}
 
       {!loading && requests.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
           <table className="w-full text-sm min-w-[560px]">
             <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Child</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Class</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Requested</th>
+              <tr className="border-b" style={{ backgroundColor: '#F0F4F8' }}>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Child</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Class</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Status</th>
+                <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Requested</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -82,7 +82,7 @@ export default function AdminRequests() {
 
                 return (
                   <tr key={req.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                    <td className="px-4 py-3 font-medium" style={{ color: '#1E2D3D' }}>
                       {child?.full_name || '—'}
                     </td>
                     <td className="px-4 py-3">
@@ -94,11 +94,11 @@ export default function AdminRequests() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: style.backgroundColor, color: style.color }}>
                         {style.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 tabular-nums">
+                    <td className="px-4 py-3 tabular-nums" style={{ color: '#4A5568' }}>
                       {formatTime(req.requested_at)}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -120,8 +120,8 @@ export default function AdminRequests() {
       {showConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">Clear All Active Requests?</h2>
-            <p className="text-sm text-gray-600 mb-5">
+            <h2 className="text-lg font-bold mb-3" style={{ color: '#1E2D3D' }}>Clear All Active Requests?</h2>
+            <p className="text-sm mb-5" style={{ color: '#4A5568' }}>
               This will mark all {requests.length} active request{requests.length !== 1 ? 's' : ''} as cleared. This cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
@@ -133,7 +133,8 @@ export default function AdminRequests() {
               </button>
               <button
                 onClick={clearAll}
-                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="px-4 py-2 text-sm text-white rounded-lg"
+                style={{ backgroundColor: '#1E2D3D' }}
               >
                 Clear All
               </button>

@@ -18,7 +18,7 @@ function CountdownBadge({ requestedAt, status }) {
 
   if (status === 'arrived') {
     return (
-      <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 font-bold text-sm px-3 py-1 rounded-full">
+      <span className="inline-flex items-center gap-1 font-bold text-sm px-3 py-1 rounded-full" style={{ backgroundColor: '#E8F5F4', color: '#4AADA0' }}>
         ⚡ ARRIVED
       </span>
     )
@@ -26,7 +26,7 @@ function CountdownBadge({ requestedAt, status }) {
 
   if (status === 'ready') {
     return (
-      <span className="inline-flex items-center bg-green-100 text-green-700 font-semibold text-sm px-3 py-1 rounded-full">
+      <span className="inline-flex items-center font-semibold text-sm px-3 py-1 rounded-full" style={{ backgroundColor: '#E8F5F4', color: '#4AADA0' }}>
         Ready
       </span>
     )
@@ -36,7 +36,7 @@ function CountdownBadge({ requestedAt, status }) {
   const text = formatCountdown(remaining)
 
   if (!text) {
-    return <span className="text-amber-600 text-sm font-medium">Arriving Soon</span>
+    return <span className="text-sm font-medium" style={{ color: '#4AADA0' }}>Arriving Soon</span>
   }
 
   return (
@@ -52,11 +52,11 @@ function RequestCard({ request, onMarkReady, onMarkDelivered }) {
 
   return (
     <div
-      className="rounded-xl p-4 mb-3 border"
+      className="rounded-xl p-4 mb-3"
       style={{
-        borderColor: `${classColor}40`,
-        backgroundColor: isArrived ? `${classColor}15` : 'white',
-        boxShadow: isArrived ? `0 0 12px ${classColor}44` : '0 1px 3px rgba(0,0,0,0.06)',
+        border: isArrived ? `1px solid #4AADA0` : '1px solid #E2E8F0',
+        backgroundColor: isArrived ? '#E8F5F4' : 'white',
+        boxShadow: isArrived ? `0 0 12px rgba(74,173,160,0.3)` : '0 1px 3px rgba(0,0,0,0.06)',
       }}
     >
       <div className="flex items-center gap-3 mb-3">
@@ -64,7 +64,7 @@ function RequestCard({ request, onMarkReady, onMarkDelivered }) {
           className="w-3 h-3 rounded-full flex-shrink-0"
           style={{ backgroundColor: classColor }}
         />
-        <span className="font-semibold text-gray-900 text-lg flex-1 truncate">
+        <span className="font-semibold text-lg flex-1 truncate" style={{ color: '#1E2D3D' }}>
           {child?.full_name || '—'}
         </span>
         <span
@@ -83,15 +83,16 @@ function RequestCard({ request, onMarkReady, onMarkDelivered }) {
           className="flex-1 py-3 rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed"
           style={
             isReady || isArrived
-              ? { backgroundColor: '#D1FAE5', color: '#065F46' }
-              : { backgroundColor: '#EFF6FF', color: '#1D4ED8' }
+              ? { backgroundColor: '#E8F5F4', color: '#4AADA0', border: '1px solid #4AADA0' }
+              : { backgroundColor: '#E8F5F4', color: '#4AADA0', border: '1px solid #4AADA0' }
           }
         >
           {isReady ? '✓ Ready' : 'Mark Ready'}
         </button>
         <button
           onClick={() => onMarkDelivered(request.id)}
-          className="flex-1 py-3 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+          className="flex-1 py-3 rounded-lg text-sm font-semibold text-white transition-colors"
+          style={{ backgroundColor: '#1E2D3D' }}
         >
           Mark Delivered
         </button>
@@ -169,20 +170,22 @@ export default function StaffApp() {
   const sorted = sortRequests(filtered)
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <div className="bg-white border-b px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F0F4F8' }}>
+      {/* Top bar */}
+      <div className="px-4 py-3 flex items-center gap-3" style={{ backgroundColor: '#1E2D3D' }}>
         <div className="flex-1">
-          <span className="font-semibold text-gray-800">{staffName || 'Staff'}</span>
+          <span className="font-semibold text-white">{staffName || 'Staff'}</span>
         </div>
 
         <select
           value={selectedClass}
           onChange={(e) => setSelectedClass(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-lg px-3 py-2 text-sm focus:outline-none"
+          style={{ border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white' }}
         >
-          <option value="">All Classes</option>
+          <option value="" style={{ backgroundColor: '#1E2D3D' }}>All Classes</option>
           {classes.map((cls) => (
-            <option key={cls.id} value={cls.id}>
+            <option key={cls.id} value={cls.id} style={{ backgroundColor: '#1E2D3D' }}>
               {cls.name}
             </option>
           ))}
@@ -190,39 +193,41 @@ export default function StaffApp() {
 
         <button
           onClick={logout}
-          className="text-gray-500 hover:text-gray-800 text-sm px-3 py-2 border border-gray-200 rounded-lg transition-colors"
+          className="text-sm px-3 py-2 rounded-lg transition-colors"
+          style={{ color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.2)' }}
         >
           Sign out
         </button>
       </div>
 
+      {/* Notification banners */}
       {isSupported && status !== 'subscribed' && status !== 'denied' && (
-        <div className="bg-blue-50 border-b border-blue-200 px-4 py-3 flex items-center justify-between">
-          <span className="text-sm text-blue-800">
+        <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#E8F5F4', borderBottom: '1px solid #4AADA0' }}>
+          <span className="text-sm" style={{ color: '#1E2D3D' }}>
             Enable notifications to get alerted for new pickup requests
           </span>
           <button
             onClick={subscribe}
             disabled={status === 'requesting'}
-            className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+            className="ml-4 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+            style={{ backgroundColor: '#4AADA0' }}
           >
             {status === 'requesting' ? 'Enabling…' : 'Enable'}
           </button>
         </div>
       )}
       {status === 'denied' && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="px-4 py-3 text-sm text-red-700" style={{ backgroundColor: '#FEF2F2', borderBottom: '1px solid #FCA5A5' }}>
           Notifications blocked. Please enable them in your browser settings.
         </div>
       )}
       {errorMsg && (
-        <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="px-4 py-3 text-sm text-red-700" style={{ backgroundColor: '#FEF2F2', borderBottom: '1px solid #FCA5A5' }}>
           {errorMsg}
         </div>
       )}
 
       <div className="flex-1 p-4 max-w-2xl mx-auto w-full">
-
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-3 text-sm">
             {error}
@@ -230,11 +235,11 @@ export default function StaffApp() {
         )}
 
         {loading && (
-          <div className="text-center py-16 text-gray-400">Loading…</div>
+          <div className="text-center py-16" style={{ color: '#4A5568' }}>Loading…</div>
         )}
 
         {!loading && sorted.length === 0 && (
-          <div className="text-center py-16 text-gray-400">
+          <div className="text-center py-16" style={{ color: '#4A5568' }}>
             No active pickup requests
           </div>
         )}

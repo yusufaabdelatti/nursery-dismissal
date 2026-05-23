@@ -134,20 +134,21 @@ export default function ParentApp() {
 
   if (loadingData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500 text-lg">Loading…</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F0F4F8' }}>
+        <div className="text-lg" style={{ color: '#4A5568' }}>Loading…</div>
       </div>
     )
   }
 
   if (error && !child) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#F0F4F8' }}>
         <div className="text-center">
           <p className="text-red-600 text-lg mb-4">{error}</p>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="text-sm text-gray-500 underline"
+            className="text-sm underline"
+            style={{ color: '#4A5568' }}
           >
             Sign out
           </button>
@@ -156,24 +157,24 @@ export default function ParentApp() {
     )
   }
 
-  const accentColor = child?.classes?.color || '#3B82F6'
+  const accentColor = child?.classes?.color || '#1E2D3D'
   const firstName = child?.full_name?.split(' ')[0] || child?.full_name || ''
 
   // State E — goodbye after delivered/cleared
   if (showGoodbye) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: `${accentColor}15` }}>
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#E8F5F4' }}>
         <div className="text-center">
           <div className="text-5xl mb-4">👋</div>
-          <h2 className="text-2xl font-bold text-gray-800">Goodbye!</h2>
-          <p className="text-gray-500 mt-2">See you tomorrow</p>
+          <h2 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>Goodbye!</h2>
+          <p className="mt-2" style={{ color: '#4A5568' }}>See you tomorrow</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F0F4F8' }}>
       {/* Header */}
       <div
         className="px-6 pt-12 pb-8 text-white"
@@ -181,14 +182,15 @@ export default function ParentApp() {
       >
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-white text-opacity-80 text-sm font-medium uppercase tracking-wide">
-              {child?.classes?.name || 'Nursery'}
+            <p className="text-sm font-medium uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              {child?.classes?.name || 'KiddyTech'}
             </p>
             <h1 className="text-3xl font-bold mt-1">{child?.full_name}</h1>
           </div>
           <button
             onClick={logout}
-            className="text-white text-opacity-70 text-xs border border-white border-opacity-30 rounded px-2 py-1 mt-1"
+            className="text-xs rounded px-2 py-1 mt-1"
+            style={{ color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.3)' }}
           >
             Sign out
           </button>
@@ -207,14 +209,16 @@ export default function ParentApp() {
         {!request && (
           <div className="w-full max-w-sm text-center">
             {isSupported && status !== 'subscribed' && status !== 'denied' && (
-              <div className="w-full max-w-sm bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl mb-4 flex items-center justify-between">
-                <span className="text-sm text-amber-800">
+              <div className="w-full max-w-sm px-4 py-3 rounded-xl mb-4 flex items-center justify-between"
+                style={{ backgroundColor: '#E8F5F4', border: '1px solid #4AADA0' }}>
+                <span className="text-sm" style={{ color: '#1E2D3D' }}>
                   Get notified when your child is ready
                 </span>
                 <button
                   onClick={subscribe}
                   disabled={status === 'requesting'}
-                  className="ml-3 bg-amber-500 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+                  className="ml-3 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+                  style={{ backgroundColor: '#4AADA0' }}
                 >
                   {status === 'requesting' ? '…' : 'Enable'}
                 </button>
@@ -223,12 +227,12 @@ export default function ParentApp() {
             {errorMsg && (
               <p className="text-red-600 text-xs mb-4">{errorMsg}</p>
             )}
-            <p className="text-gray-500 mb-8 text-lg">Ready for pickup?</p>
+            <p className="mb-8 text-lg" style={{ color: '#4A5568' }}>Ready for pickup?</p>
             <button
               onClick={requestPickup}
               disabled={actionLoading}
               className="w-full text-white font-semibold text-xl py-5 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
-              style={{ backgroundColor: accentColor, minHeight: '72px' }}
+              style={{ backgroundColor: '#4AADA0', minHeight: '72px' }}
             >
               {actionLoading ? 'Sending…' : 'Request Pickup'}
             </button>
@@ -238,22 +242,22 @@ export default function ParentApp() {
         {/* State B — requested, staff notified */}
         {request && request.status === 'requested' && (
           <div className="w-full max-w-sm text-center">
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8">
-              <p className="font-semibold text-gray-800 text-lg">
+            <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: '#E8F5F4', border: '1px solid #4AADA0' }}>
+              <p className="font-semibold text-lg" style={{ color: '#1E2D3D' }}>
                 Pickup requested
               </p>
-              <p className="text-gray-500 text-sm mt-1">
+              <p className="text-sm mt-1" style={{ color: '#4A5568' }}>
                 Staff have been notified
               </p>
             </div>
-            <p className="text-gray-500 mb-4 text-sm">
+            <p className="mb-4 text-sm" style={{ color: '#4A5568' }}>
               Press the button below when you arrive at the nursery
             </p>
             <button
               onClick={markArrived}
               disabled={actionLoading}
-              className="w-full bg-green-500 text-white font-semibold text-xl py-5 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
-              style={{ minHeight: '72px' }}
+              className="w-full text-white font-semibold text-xl py-5 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#1E2D3D', minHeight: '72px' }}
             >
               {actionLoading ? 'Updating…' : 'I Have Arrived'}
             </button>
@@ -263,23 +267,23 @@ export default function ParentApp() {
         {/* State C — ready, warm message */}
         {request && request.status === 'ready' && (
           <div className="w-full max-w-sm text-center">
-            <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
+            <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#E8F5F4', border: '1px solid #4AADA0' }}>
               <div className="text-4xl mb-3">🌟</div>
-              <p className="font-bold text-gray-800 text-xl mb-2">
+              <p className="font-bold text-xl mb-2" style={{ color: '#1E2D3D' }}>
                 {firstName} is ready and waiting for you!
               </p>
-              <p className="text-amber-700 text-sm">
+              <p className="text-sm" style={{ color: '#4AADA0' }}>
                 Come on over — we'll have them at the door with a smile 💛
               </p>
             </div>
-            <p className="text-gray-500 mb-4 text-sm">
+            <p className="mb-4 text-sm" style={{ color: '#4A5568' }}>
               Press the button below when you arrive
             </p>
             <button
               onClick={markArrived}
               disabled={actionLoading}
-              className="w-full bg-amber-500 text-white font-semibold text-xl py-5 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
-              style={{ minHeight: '72px' }}
+              className="w-full text-white font-semibold text-xl py-5 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#1E2D3D', minHeight: '72px' }}
             >
               {actionLoading ? 'Updating…' : 'I Have Arrived'}
             </button>
@@ -289,25 +293,25 @@ export default function ParentApp() {
         {/* State D — arrived, awaiting handoff */}
         {request && request.status === 'arrived' && (
           <div className="w-full max-w-sm text-center">
-            <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: `${accentColor}15` }}>
+            <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#E8F5F4' }}>
               <div className="flex justify-center mb-4">
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${accentColor}25` }}
+                  style={{ backgroundColor: 'rgba(74,173,160,0.2)' }}
                 >
                   <div
                     className="w-8 h-8 rounded-full animate-pulse"
-                    style={{ backgroundColor: accentColor }}
+                    style={{ backgroundColor: '#4AADA0' }}
                   />
                 </div>
               </div>
-              <p className="font-bold text-gray-800 text-xl mb-2">You're here!</p>
-              <p className="text-gray-600">
+              <p className="font-bold text-xl mb-2" style={{ color: '#1E2D3D' }}>You're here!</p>
+              <p style={{ color: '#4A5568' }}>
                 We're bringing {firstName} to you now 🤗
               </p>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-3 text-green-700 text-sm font-medium">
+            <div className="rounded-xl px-5 py-3 text-sm font-medium" style={{ backgroundColor: '#E8F5F4', border: '1px solid #4AADA0', color: '#4AADA0' }}>
               Arrival confirmed — please wait
             </div>
           </div>

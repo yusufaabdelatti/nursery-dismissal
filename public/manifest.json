@@ -1,10 +1,10 @@
 {
-  "name": "Nursery Dismissal",
-  "short_name": "Nursery",
+  "name": "KiddyTech Smart Dismissal",
+  "short_name": "KiddyTech",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F1117",
-  "theme_color": "#0F1117",
+  "background_color": "#1E2D3D",
+  "theme_color": "#4AADA0",
   "icons": [
     {
       "src": "/icon.png",

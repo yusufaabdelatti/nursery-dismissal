@@ -7,7 +7,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-bold" style={{ color: '#1E2D3D' }}>{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -156,21 +156,28 @@ export default function AdminStaff() {
 
   const classNameMap = Object.fromEntries(classes.map((c) => [c.id, c.name]))
 
+  const roleBadgeStyle = (role) => {
+    if (role === 'admin') return { backgroundColor: '#EDE9FE', color: '#7B7BAF' }
+    if (role === 'display') return { backgroundColor: '#F3F4F6', color: '#6B7280' }
+    return { backgroundColor: '#E8F5F4', color: '#4AADA0' }
+  }
+
   if (loading) {
-    return <div className="text-gray-400 py-12 text-center">Loading…</div>
+    return <div className="py-12 text-center" style={{ color: '#4A5568' }}>Loading…</div>
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Staff Accounts</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>Staff Accounts</h1>
         <button
           onClick={() => {
             setShowAdd(true)
             setError(null)
             setForm({ email: '', password: '', display_name: '', role: 'staff', class_id: '' })
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          style={{ backgroundColor: '#4AADA0' }}
         >
           Add Staff
         </button>
@@ -185,35 +192,30 @@ export default function AdminStaff() {
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm min-w-[620px]">
           <thead>
-            <tr className="border-b bg-gray-50">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Role</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Class</th>
+            <tr className="border-b" style={{ backgroundColor: '#F0F4F8' }}>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Name</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Email</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Role</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Class</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {staffList.map((member) => (
               <tr key={member.id} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">
+                <td className="px-4 py-3 font-medium" style={{ color: '#1E2D3D' }}>
                   {member.display_name}
                 </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">{member.email}</td>
+                <td className="px-4 py-3 text-xs" style={{ color: '#4A5568' }}>{member.email}</td>
                 <td className="px-4 py-3">
                   <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      member.role === 'admin'
-                        ? 'bg-purple-100 text-purple-700'
-                        : member.role === 'display'
-                        ? 'bg-gray-100 text-gray-600'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}
+                    className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={roleBadgeStyle(member.role)}
                   >
                     {ROLE_LABELS[member.role]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">
+                <td className="px-4 py-3 text-xs" style={{ color: '#4A5568' }}>
                   {member.class_id ? classNameMap[member.class_id] || '—' : <span className="text-gray-300">—</span>}
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -222,7 +224,8 @@ export default function AdminStaff() {
                       setEditTarget(member)
                       setEditForm({ role: member.role, class_id: member.class_id || '' })
                     }}
-                    className="text-blue-600 hover:underline text-xs mr-3"
+                    className="hover:underline text-xs mr-3"
+                    style={{ color: '#4AADA0' }}
                   >
                     Edit
                   </button>
@@ -252,7 +255,6 @@ export default function AdminStaff() {
         </table>
       </div>
 
-      {/* Add staff modal */}
       {showAdd && (
         <Modal title="Add Staff Account" onClose={() => setShowAdd(false)}>
           {error && (
@@ -265,7 +267,7 @@ export default function AdminStaff() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.display_name}
               onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
             />
@@ -275,7 +277,7 @@ export default function AdminStaff() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             />
@@ -287,7 +289,7 @@ export default function AdminStaff() {
             </label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 font-mono"
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               placeholder="min. 6 characters"
@@ -297,7 +299,7 @@ export default function AdminStaff() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.role}
               onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
             >
@@ -312,7 +314,7 @@ export default function AdminStaff() {
               Assigned Class <span className="text-gray-400 font-normal">(optional)</span>
             </label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.class_id}
               onChange={(e) => setForm((f) => ({ ...f, class_id: e.target.value }))}
             >
@@ -333,7 +335,8 @@ export default function AdminStaff() {
             <button
               onClick={addStaff}
               disabled={saving}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-white rounded-lg disabled:opacity-50"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               {saving ? 'Creating…' : 'Create Account'}
             </button>
@@ -341,7 +344,6 @@ export default function AdminStaff() {
         </Modal>
       )}
 
-      {/* Edit staff modal */}
       {editTarget && (
         <Modal title="Edit Staff" onClose={() => setEditTarget(null)}>
           <p className="text-sm text-gray-600 mb-4">
@@ -351,7 +353,7 @@ export default function AdminStaff() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={editForm.role}
               onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
             >
@@ -366,7 +368,7 @@ export default function AdminStaff() {
               Assigned Class <span className="text-gray-400 font-normal">(optional)</span>
             </label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={editForm.class_id}
               onChange={(e) => setEditForm((f) => ({ ...f, class_id: e.target.value }))}
             >
@@ -387,7 +389,8 @@ export default function AdminStaff() {
             <button
               onClick={saveEdit}
               disabled={saving}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-white rounded-lg disabled:opacity-50"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -395,7 +398,6 @@ export default function AdminStaff() {
         </Modal>
       )}
 
-      {/* Reset password confirmation */}
       {resetTarget && (
         <Modal title="Reset Password" onClose={() => setResetTarget(null)}>
           <p className="text-sm text-gray-700 mb-5">
@@ -411,7 +413,8 @@ export default function AdminStaff() {
             </button>
             <button
               onClick={() => sendPasswordReset(resetTarget.email)}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 text-sm text-white rounded-lg"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               Send Reset Email
             </button>
@@ -419,7 +422,6 @@ export default function AdminStaff() {
         </Modal>
       )}
 
-      {/* Delete confirmation */}
       {deleteTarget && (
         <Modal title="Remove Staff Account" onClose={() => setDeleteTarget(null)}>
           <p className="text-sm text-gray-700 mb-5">

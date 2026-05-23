@@ -21,9 +21,9 @@ const NAV_ITEMS = [
 function Hamburger() {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="w-5 h-0.5 bg-gray-600" />
-      <div className="w-5 h-0.5 bg-gray-600" />
-      <div className="w-5 h-0.5 bg-gray-600" />
+      <div className="w-5 h-0.5 bg-white opacity-80" />
+      <div className="w-5 h-0.5 bg-white opacity-80" />
+      <div className="w-5 h-0.5 bg-white opacity-80" />
     </div>
   )
 }
@@ -39,7 +39,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: '#F0F4F8' }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -50,13 +50,23 @@ export default function AdminDashboard() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static z-30 h-full w-64 bg-gray-900 text-white flex flex-col transition-transform duration-300 ${
+        className={`fixed lg:static z-30 h-full w-64 flex flex-col transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
+        style={{ backgroundColor: '#1E2D3D' }}
       >
-        <div className="p-6 border-b border-gray-800">
-          <h1 className="text-lg font-bold text-white">Nursery Admin</h1>
-          <p className="text-gray-500 text-xs mt-1 truncate">{user?.email}</p>
+        {/* Logo area */}
+        <div className="p-5 border-b border-white border-opacity-10">
+          <img
+            src="/kiddytech-logo.png"
+            alt="KiddyTech"
+            style={{ width: '140px', marginBottom: '8px' }}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
+          <p className="text-white font-bold text-sm">KiddyTech Admin</p>
+          <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            {user?.email}
+          </p>
         </div>
 
         <nav className="flex-1 p-3 overflow-y-auto">
@@ -66,10 +76,12 @@ export default function AdminDashboard() {
               to={`/admin/${item.path}`}
               className={({ isActive }) =>
                 `block px-4 py-3 rounded-lg mb-1 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  isActive ? '' : 'hover:bg-white hover:bg-opacity-10'
                 }`
+              }
+              style={({ isActive }) => isActive
+                ? { color: '#4AADA0', borderLeft: '3px solid #4AADA0', paddingLeft: '13px', backgroundColor: 'rgba(74,173,160,0.12)' }
+                : { color: 'rgba(255,255,255,0.8)' }
               }
               onClick={() => setSidebarOpen(false)}
             >
@@ -78,10 +90,11 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-white border-opacity-10">
           <button
             onClick={logout}
-            className="w-full px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm text-left transition-colors"
+            className="w-full px-4 py-2 rounded-lg text-sm text-left transition-colors hover:bg-white hover:bg-opacity-10"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
           >
             Sign Out
           </button>
@@ -91,16 +104,22 @@ export default function AdminDashboard() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-auto">
         {/* Mobile top bar */}
-        <header className="lg:hidden bg-white border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+        <header className="lg:hidden border-b px-4 py-3 flex items-center gap-3 sticky top-0 z-10" style={{ backgroundColor: '#1E2D3D' }}>
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10"
             aria-label="Open menu"
           >
             <Hamburger />
           </button>
-          <span className="font-semibold text-gray-800 text-sm">
-            Nursery Admin
+          <img
+            src="/kiddytech-logo.png"
+            alt="KiddyTech"
+            style={{ height: '24px' }}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
+          <span className="font-semibold text-white text-sm">
+            KiddyTech Admin
           </span>
         </header>
 

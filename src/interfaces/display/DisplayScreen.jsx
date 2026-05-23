@@ -75,7 +75,18 @@ function LiveBoard({ audioCtx, branchName }) {
       {/* Header */}
       <div className="flex justify-between items-center px-8 py-5 border-b border-gray-800">
         <div>
-          <div className="text-2xl font-bold text-white">{branchName}</div>
+          <div className="flex items-center gap-3">
+            <img
+              src="/kiddytech-logo.png"
+              alt="KiddyTech"
+              style={{ height: '28px' }}
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#4AADA0' }}>
+              KIDDYTECH
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-white mt-1">{branchName}</div>
           <div className="text-gray-500 text-xs mt-0.5 uppercase tracking-widest">
             Live Dismissal Board
           </div>
@@ -109,7 +120,7 @@ function LiveBoard({ audioCtx, branchName }) {
 export default function DisplayScreen() {
   const [activated, setActivated] = useState(false)
   const [audioCtx, setAudioCtx] = useState(null)
-  const [branchName, setBranchName] = useState('Nursery Dismissal')
+  const [branchName, setBranchName] = useState('Smart Dismissal')
 
   useEffect(() => {
     supabase
@@ -142,12 +153,24 @@ export default function DisplayScreen() {
         onClick={activate}
       >
         <div className="text-center px-8">
+          <div className="flex flex-col items-center mb-6">
+            <img
+              src="/kiddytech-logo.png"
+              alt="KiddyTech"
+              style={{ height: '56px', marginBottom: '12px' }}
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#4AADA0' }}>
+              KIDDYTECH
+            </span>
+          </div>
           <h1 className="text-white text-4xl font-bold mb-2">{branchName}</h1>
           <p className="text-gray-600 text-sm mb-12 uppercase tracking-widest">
             Dismissal System
           </p>
           <button
-            className="bg-blue-600 hover:bg-blue-500 text-white text-2xl font-semibold px-16 py-7 rounded-2xl transition-colors shadow-2xl"
+            className="text-white text-2xl font-semibold px-16 py-7 rounded-2xl transition-colors shadow-2xl"
+            style={{ backgroundColor: '#4AADA0' }}
             onClick={(e) => {
               e.stopPropagation()
               activate()

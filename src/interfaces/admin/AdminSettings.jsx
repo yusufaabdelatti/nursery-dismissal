@@ -6,7 +6,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-bold" style={{ color: '#1E2D3D' }}>{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -89,7 +89,7 @@ export default function AdminSettings() {
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: '#1E2D3D' }}>Settings</h1>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
@@ -99,21 +99,22 @@ export default function AdminSettings() {
 
       {/* Branch name */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
-        <h2 className="font-semibold text-gray-900 mb-1">Branch Name</h2>
-        <p className="text-gray-500 text-sm mb-4">
+        <h2 className="font-semibold mb-1" style={{ color: '#1E2D3D' }}>Branch Name</h2>
+        <p className="text-sm mb-4" style={{ color: '#4A5568' }}>
           Displayed in the header of the live dismissal board.
         </p>
         <div className="flex gap-3">
           <input
             type="text"
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
             value={branchNameInput}
             onChange={(e) => setBranchNameInput(e.target.value)}
           />
           <button
             onClick={saveBranchName}
             disabled={savingName || branchNameInput.trim() === branchName}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+            className="px-4 py-2 text-sm text-white rounded-lg disabled:opacity-50 transition-colors whitespace-nowrap"
+            style={{ backgroundColor: '#4AADA0' }}
           >
             {savingName ? 'Saving…' : 'Save'}
           </button>
@@ -125,8 +126,8 @@ export default function AdminSettings() {
 
       {/* End-of-day reset */}
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="font-semibold text-gray-900 mb-1">End-of-Day Reset</h2>
-        <p className="text-gray-500 text-sm mb-4">
+        <h2 className="font-semibold mb-1" style={{ color: '#1E2D3D' }}>End-of-Day Reset</h2>
+        <p className="text-sm mb-4" style={{ color: '#4A5568' }}>
           Clears all active pickup requests for today. Use this at the end of
           each school day after all children have been collected.
         </p>
@@ -145,7 +146,6 @@ export default function AdminSettings() {
         </button>
       </div>
 
-      {/* Reset confirmation modal */}
       {showResetConfirm && (
         <Modal
           title="Confirm End-of-Day Reset"

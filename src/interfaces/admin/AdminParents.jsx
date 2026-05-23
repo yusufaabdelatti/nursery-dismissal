@@ -7,7 +7,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-bold" style={{ color: '#1E2D3D' }}>{title}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
@@ -22,7 +22,7 @@ function Modal({ title, onClose, children }) {
 }
 
 export default function AdminParents() {
-  const [parents, setParents] = useState([]) // {id, email, childName}
+  const [parents, setParents] = useState([])
   const [children, setChildren] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -70,7 +70,6 @@ export default function AdminParents() {
       .filter((u) => !staffIds.has(u.id))
       .map((u) => ({ id: u.id, email: u.email, childName: childMap[u.id] || null }))
 
-    // Unlinked children for the add form
     const unlinked = (childData || []).filter((c) => !c.parent_user_id)
 
     setParents(parentList)
@@ -91,7 +90,6 @@ export default function AdminParents() {
     setSaving(true)
     setError(null)
 
-    // Create user via admin API (bypasses email confirmation)
     const { data: newUserData, error: createError } =
       await supabaseAdmin.auth.admin.createUser({
         email: form.email.trim(),
@@ -105,7 +103,6 @@ export default function AdminParents() {
       return
     }
 
-    // Link child if selected
     if (form.child_id) {
       await supabase
         .from('children')
@@ -135,16 +132,17 @@ export default function AdminParents() {
   }
 
   if (loading) {
-    return <div className="text-gray-400 py-12 text-center">Loading…</div>
+    return <div className="py-12 text-center" style={{ color: '#4A5568' }}>Loading…</div>
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Parent Accounts</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#1E2D3D' }}>Parent Accounts</h1>
         <button
           onClick={() => { setShowAdd(true); setError(null); setForm({ email: '', password: '', child_id: '' }) }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          style={{ backgroundColor: '#4AADA0' }}
         >
           Add Parent
         </button>
@@ -159,23 +157,24 @@ export default function AdminParents() {
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
-            <tr className="border-b bg-gray-50">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Linked Child</th>
+            <tr className="border-b" style={{ backgroundColor: '#F0F4F8' }}>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Email</th>
+              <th className="text-left px-4 py-3 font-semibold" style={{ color: '#4A5568' }}>Linked Child</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {parents.map((p) => (
               <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-900">{p.email}</td>
-                <td className="px-4 py-3 text-gray-500 text-xs">
+                <td className="px-4 py-3" style={{ color: '#1E2D3D' }}>{p.email}</td>
+                <td className="px-4 py-3 text-xs" style={{ color: '#4A5568' }}>
                   {p.childName || <span className="text-amber-600">No child linked</span>}
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <button
                     onClick={() => setResetTarget(p)}
-                    className="text-blue-600 hover:underline text-xs mr-3"
+                    className="hover:underline text-xs mr-3"
+                    style={{ color: '#4AADA0' }}
                   >
                     Reset Password
                   </button>
@@ -199,7 +198,6 @@ export default function AdminParents() {
         </table>
       </div>
 
-      {/* Add parent modal */}
       {showAdd && (
         <Modal title="Add Parent Account" onClose={() => setShowAdd(false)}>
           {error && (
@@ -212,7 +210,7 @@ export default function AdminParents() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             />
@@ -224,7 +222,7 @@ export default function AdminParents() {
             </label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 font-mono"
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               placeholder="min. 6 characters"
@@ -236,7 +234,7 @@ export default function AdminParents() {
               Link to Child (optional)
             </label>
             <select
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2"
               value={form.child_id}
               onChange={(e) => setForm((f) => ({ ...f, child_id: e.target.value }))}
             >
@@ -257,7 +255,8 @@ export default function AdminParents() {
             <button
               onClick={addParent}
               disabled={saving}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-white rounded-lg disabled:opacity-50"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               {saving ? 'Creating…' : 'Create Account'}
             </button>
@@ -265,7 +264,6 @@ export default function AdminParents() {
         </Modal>
       )}
 
-      {/* Reset password confirmation */}
       {resetTarget && (
         <Modal title="Reset Password" onClose={() => setResetTarget(null)}>
           <p className="text-sm text-gray-700 mb-5">
@@ -281,7 +279,8 @@ export default function AdminParents() {
             </button>
             <button
               onClick={() => sendPasswordReset(resetTarget.email)}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 text-sm text-white rounded-lg"
+              style={{ backgroundColor: '#4AADA0' }}
             >
               Send Reset Email
             </button>
@@ -289,7 +288,6 @@ export default function AdminParents() {
         </Modal>
       )}
 
-      {/* Delete confirmation */}
       {deleteTarget && (
         <Modal title="Remove Parent Account" onClose={() => setDeleteTarget(null)}>
           <p className="text-sm text-gray-700 mb-5">

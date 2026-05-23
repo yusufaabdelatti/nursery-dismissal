@@ -24,7 +24,7 @@ export default function RequestRow({ request, tick }) {
         height: '60px',
         backgroundColor: `${classColor}12`,
         borderLeft: `5px solid ${classColor}`,
-        boxShadow: isArrived ? `0 0 18px ${classColor}66` : 'none',
+        boxShadow: isArrived ? `0 0 18px #4AADA066` : 'none',
       }}
     >
       {/* Class color dot */}
@@ -49,17 +49,17 @@ export default function RequestRow({ request, tick }) {
       {/* Status / countdown */}
       <div className="w-44 text-right shrink-0 font-mono">
         {isArrived ? (
-          <span className="text-white font-black text-2xl tracking-wide">
+          <span className="font-black text-2xl tracking-wide" style={{ color: '#4AADA0' }}>
             ⚡ ARRIVED
           </span>
         ) : isReady ? (
-          <span className="text-green-400 font-black text-2xl">Ready</span>
+          <span className="font-black text-2xl" style={{ color: '#4AADA0' }}>Ready</span>
         ) : countdownText ? (
           <span className="text-gray-200 text-2xl font-bold tabular-nums">
             {countdownText}
           </span>
         ) : (
-          <span className="text-amber-500 font-bold text-lg">Arriving Soon</span>
+          <span className="font-bold text-lg" style={{ color: '#4AADA0' }}>Arriving Soon</span>
         )}
       </div>
     </div>
